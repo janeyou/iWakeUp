@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { EntryRow } from "@/lib/db";
 import { getAgentBySlug } from "@/content/agents";
 import { EmbeddedTweet } from "@/components/EmbeddedTweet";
-import { TypeBadge } from "@/components/TypeBadge";
 
 export function TodayPanel({ entries }: { entries: EntryRow[] }) {
   if (entries.length === 0) {
@@ -55,7 +54,6 @@ function Lead({ entry }: { entry: EntryRow }) {
         <span className="font-medium" style={{ color: `var(--color-agent-${slug}, var(--color-text))` }}>
           {agent?.name ?? slug}
         </span>
-        <TypeBadge type={entry.entry_type} />
         <span className="ml-auto text-[var(--color-text-faint)]">{relTime(entry.published_at)}</span>
       </div>
       <h3 className="font-[family-name:var(--font-display)] font-normal text-[28px] leading-[1.15] tracking-[-0.015em] text-[var(--color-text)]">

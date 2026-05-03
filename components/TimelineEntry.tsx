@@ -1,12 +1,6 @@
 import type { EntryRow } from "@/lib/db";
 import { EmbeddedTweet } from "@/components/EmbeddedTweet";
-import { TypeBadge } from "@/components/TypeBadge";
-
-const COLOR_BY_TYPE = {
-  release: "var(--color-release)",
-  news: "var(--color-news)",
-  post: "var(--color-post)",
-};
+import { getAgentBySlug } from "@/content/agents";
 
 export function TimelineEntry({
   entry,
@@ -16,18 +10,21 @@ export function TimelineEntry({
   agentName?: string;
 }) {
   const time = formatTimeIfMeaningful(entry.published_at);
-  const borderColor = COLOR_BY_TYPE[entry.entry_type] ?? "var(--color-border)";
+  const slug = entry.agent_slug;
+  const resolvedAgent =
+    agentName ?? getAgentBySlug(slug)?.name ?? slug;
+  const railColor = `var(--color-agent-${slug}, var(--color-border))`;
 
   return (
-    <article className="border-l-2 pl-4 pb-4" style={{ borderColor }}>
+    <article className="border-l-2 pl-4 pb-4" style={{ borderColor: railColor }}>
       <div className="flex items-baseline justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-2">
-          <TypeBadge type={entry.entry_type} />
-          {agentName && (
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
-              {agentName}
-            </span>
-          )}
+          <span
+            className="font-mono text-[10px] font-semibold uppercase tracking-wider"
+            style={{ color: `var(--color-agent-${slug}, var(--color-text-muted))` }}
+          >
+            {resolvedAgent}
+          </span>
           <a
             href={entry.source_url}
             target="_blank"

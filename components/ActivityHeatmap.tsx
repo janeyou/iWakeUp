@@ -12,7 +12,9 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
   const cells = buildCells();
   const monthLabels = buildMonthLabels(cells);
   const single = props.mode !== "global";
-  const aggregated = single ? aggregateSingle(props.data) : aggregateGlobal(props.data);
+  const aggregated = single
+    ? aggregateSingle(props.data, (props as SingleProps).agentSlug)
+    : aggregateGlobal(props.data);
   const streak = computeStreak(aggregated);
   const busy = busiestDay(aggregated);
 
@@ -80,14 +82,13 @@ function Callout({ label, value, unit }: { label: string; value: string; unit?: 
   );
 }
 
-type DayInfo = { total: number; hue: string; byAgent?: Record<string, number>; byType?: { releases: number; news: number; posts: number } };
+type DayInfo = { total: number; hue: string; byAgent?: Record<string, number> };
 
-function aggregateSingle(rows: ActivityDay[]): Map<string, DayInfo> {
+function aggregateSingle(rows: ActivityDay[], slug: string): Map<string, DayInfo> {
   const map = new Map<string, DayInfo>();
+  const hue = `var(--color-agent-${slug}, var(--color-accent))`;
   for (const r of rows) {
-    const max = Math.max(r.releases, r.news, r.posts);
-    const hue = max === r.releases ? "var(--color-release)" : max === r.news ? "var(--color-news)" : "var(--color-post)";
-    map.set(r.date, { total: r.total, hue, byType: { releases: r.releases, news: r.news, posts: r.posts } });
+    map.set(r.date, { total: r.total, hue });
   }
   return map;
 }
@@ -118,13 +119,8 @@ function cellColor(day: DayInfo | undefined, _single: boolean, _slug?: string): 
 function tooltipText(day: DayInfo | undefined, date: string, single: boolean): string {
   const dt = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   if (!day || day.total === 0) return `Quiet on ${dt}`;
-  if (single && day.byType) {
-    const parts: string[] = [];
-    const t = day.byType;
-    if (t.releases) parts.push(`${t.releases} release${t.releases > 1 ? "s" : ""}`);
-    if (t.news) parts.push(`${t.news} news`);
-    if (t.posts) parts.push(`${t.posts} post${t.posts > 1 ? "s" : ""}`);
-    return `${parts.join(", ")} · ${dt}`;
+  if (single) {
+    return `${day.total} drop${day.total > 1 ? "s" : ""} · ${dt}`;
   }
   if (day.byAgent) {
     const parts: string[] = [];
