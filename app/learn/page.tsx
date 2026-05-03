@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "The landscape, agent products by autonomy level · AI Radar",
   description:
-    "Where each AI product sits on the 5-level autonomy ladder. The full framework lives at pmclaws.com/framework.",
+    "Where each AI product sits on the 5-level autonomy ladder. The full framework essay lives on janeyoubradley.com.",
 };
 
 export default function LearnPage() {
@@ -35,14 +35,14 @@ export default function LearnPage() {
           </p>
           <p>
             The full framework with the PM-trust lens, jumps that matter, and
-            decision table lives at{" "}
+            decision table lives in{" "}
             <a
-              href="https://pmclaws.com/framework"
+              href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
               target="_blank"
               rel="noreferrer"
               className="text-[var(--color-accent)] underline-offset-4 hover:underline"
             >
-              pmclaws.com/framework
+              the agentic AI landscape essay
             </a>
             .
           </p>
@@ -86,13 +86,13 @@ export default function LearnPage() {
         <LandscapeMatrix />
       </section>
 
-      {/* CTA back to pmclaws.com/framework */}
+      {/* CTA back to the framework essay */}
       <section className="mb-16 rounded-2xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-8">
         <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-accent)]">
           Want the framework, not just the map?
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-[var(--color-text)]">
-          Read the full 5-level framework on pmclaws.com.
+          Read the full 5-level framework essay.
         </h2>
         <p className="mt-3 max-w-2xl text-base text-[var(--color-text-muted)]">
           Each level with the capability lens, the PM-trust lens, jumps that
@@ -100,25 +100,25 @@ export default function LearnPage() {
           for the task.
         </p>
         <a
-          href="https://pmclaws.com/framework"
+          href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
           target="_blank"
           rel="noreferrer"
           className="mt-5 inline-block text-sm font-medium text-[var(--color-accent)] hover:underline"
         >
-          Read at pmclaws.com/framework →
+          Read the essay on janeyoubradley.com →
         </a>
       </section>
 
       <footer className="border-t border-[var(--color-border)] pt-8 space-y-2 text-sm text-[var(--color-text-faint)]">
         <p>
-          The landscape view of the 5-level taxonomy. Full definition lives at{" "}
+          The landscape view of the 5-level taxonomy. Full definition lives in{" "}
           <a
-            href="https://pmclaws.com/framework"
+            href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--color-text)]"
           >
-            pmclaws.com/framework
+            the agentic AI landscape essay
           </a>
           .
         </p>

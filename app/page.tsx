@@ -52,7 +52,7 @@ export default async function HomePage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <a
-              href="https://pmclaws.com/framework"
+              href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
               target="_blank"
               rel="noreferrer"
               className="rounded-full border border-[var(--color-border)] px-3.5 py-1.5 text-xs text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
@@ -107,17 +107,17 @@ export default async function HomePage() {
           Not sure what an &ldquo;AI agent&rdquo; really means?
         </h2>
         <p className="mt-3 max-w-2xl text-base text-[var(--color-text-muted)]">
-          The word covers everything from autocomplete to autonomous deputies. PMClaws uses
-          a 5-level framework, capability and PM-trust on each, to tell what&apos;s what.
+          The word covers everything from autocomplete to autonomous deputies. Jane wrote a
+          5-level framework, capability and PM-trust on each, to tell what&apos;s what.
         </p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
           <a
-            href="https://pmclaws.com/framework"
+            href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
             target="_blank"
             rel="noreferrer"
             className="font-medium text-[var(--color-accent)] hover:underline"
           >
-            Read the framework on pmclaws.com →
+            Read the framework essay →
           </a>
           <Link
             href="/learn"
