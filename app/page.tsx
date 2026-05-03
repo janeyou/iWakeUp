@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLiveAgents, AGENTS } from "@/content/agents";
+import { getLiveAgents } from "@/content/agents";
 import {
   getRecentEntries,
   getLastIngestedAt,
@@ -12,13 +12,11 @@ import { TodayPanel } from "@/components/TodayPanel";
 import { TrackedAgentCard } from "@/components/TrackedAgentCard";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SubscribeForm } from "@/components/SubscribeForm";
-import { SuggestToolForm } from "@/components/SuggestToolForm";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
   const liveAgents = getLiveAgents();
-  const queued = AGENTS.filter((a) => a.status === "coming_soon");
 
   const [recent, lastIngestedAt, ...rest] = await Promise.all([
     safe(() => getRecentEntries(24), [] as EntryRow[]),
@@ -40,7 +38,6 @@ export default async function HomePage() {
       <Masthead
         recentCount={recent.length}
         toolsLive={liveAgents.length}
-        toolsTotal={AGENTS.length}
         lastIngestedAt={lastIngestedAt}
       />
 
@@ -50,27 +47,12 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-8 sm:px-12 py-14">
-        <SectionHead kicker="Tools we track" title="Timelines" />
+        <SectionHead kicker="Tools we track" title="Timelines" right={<Link href="/agents" className="text-[var(--color-accent)] hover:underline">All agents →</Link>} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {perAgent.map(({ agent, latest, activity }) => (
             <TrackedAgentCard key={agent.slug} agent={agent} latest={latest} activity={activity} />
           ))}
         </div>
-        {queued.length > 0 && (
-          <div className="mt-4 rounded-2xl border border-dashed border-[var(--color-border-strong)] p-5">
-            <div className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
-              Coming soon · {queued.length} tools queued
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {queued.map((a) => (
-                <span key={a.slug} className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-1 text-xs text-[var(--color-text-muted)]">
-                  {a.name}
-                  <span className="font-mono text-[9.5px] uppercase tracking-wider text-[var(--color-text-faint)]">queued</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </section>
 
       <section className="border-t border-b border-[var(--color-border)] bg-[var(--color-surface-2)] py-14">
@@ -108,7 +90,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <SiteFooter suggest={<SuggestToolForm compact />} />
+      <SiteFooter />
     </main>
   );
 }

@@ -19,6 +19,9 @@ export function TopNav() {
           <Link href="/drops" className="hover:text-[var(--color-text)]">
             Drops
           </Link>
+          <Link href="/agents" className="hover:text-[var(--color-text)]">
+            Agents
+          </Link>
           <Link href="/learn" className="hover:text-[var(--color-text)]">
             Landscape
           </Link>
@@ -34,9 +37,6 @@ export function TopNav() {
               <path d="M5 11L11 5M11 5H6.5M11 5v4.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
-          <Link href="/changelog" className="hover:text-[var(--color-text)]">
-            Changelog
-          </Link>
         </nav>
 
         <ThemeToggle />

@@ -1,19 +1,8 @@
 import Link from "next/link";
 
-type Props = {
-  /** Optional secondary CTA (e.g. SuggestToolForm) rendered above the credit row. */
-  suggest?: React.ReactNode;
-};
-
-export function SiteFooter({ suggest }: Props = {}) {
+export function SiteFooter() {
   return (
     <footer className="mx-auto max-w-6xl px-8 sm:px-12 pt-12 pb-16">
-      {suggest && (
-        <div className="mb-12 mx-auto max-w-2xl">
-          {suggest}
-        </div>
-      )}
-
       <div className="font-[family-name:var(--font-display)] font-normal text-[clamp(22px,3vw,34px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text-muted)]">
         i wake up, there is <em className="italic text-[var(--color-accent)]">another one</em>.
       </div>
@@ -40,6 +29,7 @@ export function SiteFooter({ suggest }: Props = {}) {
           </a>
           <Link href="/drops" className="hover:text-[var(--color-text)]">Drops</Link>
           <Link href="/changelog" className="hover:text-[var(--color-text)]">Changelog</Link>
+          <Link href="/suggest" className="hover:text-[var(--color-text)]">Tool request</Link>
           <Link href="/status" className="hover:text-[var(--color-text)]">Status</Link>
         </nav>
       </div>

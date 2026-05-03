@@ -3,11 +3,10 @@ import { getLastIngestedAt } from "@/lib/db";
 type Props = {
   recentCount: number;
   toolsLive: number;
-  toolsTotal: number;
   lastIngestedAt: string | null;
 };
 
-export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }: Props) {
+export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
   const today = new Date().toLocaleDateString("en-US", {
     timeZone: "America/Los_Angeles",
     weekday: "long",
@@ -50,7 +49,7 @@ export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }:
           A daily public tracker of what the AI agents shipped while you slept. Updated every morning at 5am PT.
         </p>
         <div className="grid grid-cols-3 border-y border-[var(--color-border)]">
-          <Stat label="Tools tracked" value={`${toolsLive}`} suffix={` / ${toolsTotal}`} />
+          <Stat label="Tools tracked" value={`${toolsLive}`} />
           <Stat label="Drops, last 24h" value={`${recentCount}`} />
           <Stat label="Last ingest" value={stamp ? stamp.split(",")[1].trim() : ","} />
         </div>
