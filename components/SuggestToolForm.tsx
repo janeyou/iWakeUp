@@ -6,7 +6,7 @@ const REPO_URL = "https://github.com/janeyou/iWakeUp";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export function SuggestToolForm() {
+export function SuggestToolForm({ compact = false }: { compact?: boolean }) {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string>("");
 
@@ -46,15 +46,20 @@ export function SuggestToolForm() {
     }
   }
 
+  const wrap = compact
+    ? "rounded-xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-5"
+    : "rounded-2xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-6 sm:p-8";
+  const headingClass = compact
+    ? "mt-1 text-sm font-medium text-[var(--color-text)]"
+    : "mt-2 text-xl font-semibold text-[var(--color-text)]";
+
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-6 sm:p-8">
-        <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-accent)]">
-          Want a tool tracked?
+      <div className={wrap}>
+        <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-accent)]">
+          Suggest a tool
         </p>
-        <h2 className="mt-2 text-xl font-semibold text-[var(--color-text)]">
-          {message}
-        </h2>
+        <h2 className={headingClass}>{message}</h2>
         <p className="mt-2 text-sm text-[var(--color-text-muted)]">
           I&apos;ll review and wire it in if it fits.
         </p>
@@ -73,12 +78,12 @@ export function SuggestToolForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-6 sm:p-8">
-      <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-text-faint)]">
-        Want a tool tracked?
+    <div className={wrap}>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
+        Suggest a tool
       </p>
-      <h2 className="mt-2 text-xl font-semibold text-[var(--color-text)]">
-        Tell me which agent to wire in next.
+      <h2 className={headingClass}>
+        {compact ? "Missing one we should track?" : "Tell me which agent to wire in next."}
       </h2>
 
       <form onSubmit={onSubmit} className="mt-5 grid gap-3 sm:grid-cols-2">

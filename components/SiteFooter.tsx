@@ -1,20 +1,43 @@
 import Link from "next/link";
 
-export function SiteFooter() {
+type Props = {
+  /** Optional secondary CTA (e.g. SuggestToolForm) rendered above the credit row. */
+  suggest?: React.ReactNode;
+};
+
+export function SiteFooter({ suggest }: Props = {}) {
   return (
-    <footer className="mx-auto max-w-6xl px-8 sm:px-12 pt-14 pb-20">
-      <div className="font-[family-name:var(--font-display)] font-normal text-[clamp(36px,5.5vw,64px)] leading-[0.98] tracking-[-0.025em]">
-        i wake up,
-        <br />
-        there is <em className="italic text-[var(--color-accent)]">another one</em>.
-      </div>
-      <div className="mt-7 flex flex-wrap items-center justify-between gap-6 border-t border-[var(--color-border)] pt-5 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
-        <div>
-          Built by Jane You (with Claude Code &amp; Design) · maintained by RaeyaBot · daily ingest 5am PT
+    <footer className="mx-auto max-w-6xl px-8 sm:px-12 pt-12 pb-16">
+      {suggest && (
+        <div className="mb-12 mx-auto max-w-2xl">
+          {suggest}
         </div>
-        <nav className="flex gap-5">
-          <a href="https://x.com/janeyoubradley" target="_blank" rel="noreferrer" className="hover:text-[var(--color-text)]">𝕏</a>
-          <a href="https://github.com/janeyou/iWakeUp" target="_blank" rel="noreferrer" className="hover:text-[var(--color-text)]">GitHub</a>
+      )}
+
+      <div className="font-[family-name:var(--font-display)] font-normal text-[clamp(22px,3vw,34px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text-muted)]">
+        i wake up, there is <em className="italic text-[var(--color-accent)]">another one</em>.
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-[var(--color-border)] pt-5 text-sm text-[var(--color-text-faint)]">
+        <div>
+          Built by{" "}
+          <a
+            href="https://janeyou.me"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-[var(--color-text)]"
+          >
+            Jane You
+          </a>
+          {" "}with Claude Code &amp; Design. Maintained by RaeyaBot. Daily ingest 5am PT.
+        </div>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2">
+          <a href="https://x.com/janeyoubradley" target="_blank" rel="noreferrer" className="hover:text-[var(--color-text)]">
+            𝕏
+          </a>
+          <a href="https://github.com/janeyou/iWakeUp" target="_blank" rel="noreferrer" className="hover:text-[var(--color-text)]">
+            GitHub
+          </a>
           <Link href="/drops" className="hover:text-[var(--color-text)]">Drops</Link>
           <Link href="/changelog" className="hover:text-[var(--color-text)]">Changelog</Link>
           <Link href="/status" className="hover:text-[var(--color-text)]">Status</Link>
