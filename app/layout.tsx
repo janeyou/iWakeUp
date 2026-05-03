@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -15,6 +15,14 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-display",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "AI Radar, what AI agents shipped overnight",
   description:
@@ -24,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

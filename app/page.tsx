@@ -45,7 +45,7 @@ export default async function HomePage() {
       />
 
       <section className="mx-auto max-w-6xl px-8 sm:px-12 py-14">
-        <SectionHead kicker="Lead drop" title="Today's wake-up" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
+        <SectionHead kicker="Lead drop" title="Today's AI Drop" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
         <TodayPanel entries={recent} />
       </section>
 

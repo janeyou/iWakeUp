@@ -1,4 +1,5 @@
 import { getLastIngestedAt } from "@/lib/db";
+import { LogoAIRadar } from "@/components/LogoAIRadar";
 
 type Props = {
   recentCount: number;
@@ -26,7 +27,10 @@ export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }:
 
   return (
     <header className="mx-auto max-w-6xl px-8 sm:px-12 pt-14 pb-8 border-b border-[var(--color-border)]">
-      <div className="mb-6 flex flex-wrap items-baseline gap-3 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
+      <div className="mb-6 flex flex-wrap items-center gap-3 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
+        <LogoAIRadar size={20} className="text-[var(--color-accent)]" />
+        <span>AI Radar</span>
+        <span className="text-[var(--color-border-strong)]">/</span>
         <span>Vol. 03 / Issue 124</span>
         <span className="text-[var(--color-border-strong)]">/</span>
         <span>{today} · PT</span>
@@ -54,7 +58,7 @@ export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }:
         <div className="grid grid-cols-3 border-y border-[var(--color-border)]">
           <Stat label="Tools tracked" value={`${toolsLive}`} suffix={` / ${toolsTotal}`} />
           <Stat label="Drops, last 24h" value={`${recentCount}`} />
-          <Stat label="Last ingest" value={stamp ? stamp.split(",")[1].trim() : "—"} />
+          <Stat label="Last ingest" value={stamp ? stamp.split(",")[1].trim() : "-"} />
         </div>
       </div>
     </header>

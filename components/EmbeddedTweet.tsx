@@ -3,6 +3,7 @@ import { Tweet } from "react-tweet";
 import { TweetErrorBoundary } from "./TweetErrorBoundary";
 
 const SIZE_VARS: Record<"sm" | "xs", CSSProperties> = {
+  // Default size used inside TimelineEntry (drops, agent profile teaser).
   sm: {
     ["--tweet-container-margin" as string]: "0.5rem 0 0",
     ["--tweet-header-font-size" as string]: "0.625rem",
@@ -18,26 +19,30 @@ const SIZE_VARS: Record<"sm" | "xs", CSSProperties> = {
     ["--tweet-replies-line-height" as string]: "1.1",
     ["--tweet-quoted-container-margin" as string]: "0.4rem 0",
   },
+  // Compact card used inside the Lead drop on the home Today panel.
+  // Spec from designer handoff: max-width 420, body 13px / 1.45, line-clamp 3,
+  // avatar 26x26 (line-clamp + avatar resize handled by .embedded-tweet-compact
+  // CSS rules in app/globals.css).
   xs: {
-    ["--tweet-container-margin" as string]: "0.4rem 0 0",
-    ["--tweet-header-font-size" as string]: "0.5rem",
-    ["--tweet-header-line-height" as string]: "1.05",
-    ["--tweet-body-font-size" as string]: "0.5625rem",
-    ["--tweet-body-line-height" as string]: "1.2",
-    ["--tweet-body-margin" as string]: "0.15rem 0 0",
-    ["--tweet-info-font-size" as string]: "0.4375rem",
-    ["--tweet-info-line-height" as string]: "1.05",
-    ["--tweet-actions-font-size" as string]: "0.4375rem",
-    ["--tweet-actions-line-height" as string]: "1.05",
-    ["--tweet-replies-font-size" as string]: "0.4375rem",
-    ["--tweet-replies-line-height" as string]: "1.05",
-    ["--tweet-quoted-container-margin" as string]: "0.3rem 0",
+    ["--tweet-container-margin" as string]: "0.5rem 0 0",
+    ["--tweet-header-font-size" as string]: "0.6875rem",
+    ["--tweet-header-line-height" as string]: "1.2",
+    ["--tweet-body-font-size" as string]: "0.8125rem",
+    ["--tweet-body-line-height" as string]: "1.45",
+    ["--tweet-body-margin" as string]: "0.25rem 0 0",
+    ["--tweet-info-font-size" as string]: "0.625rem",
+    ["--tweet-info-line-height" as string]: "1.2",
+    ["--tweet-actions-font-size" as string]: "0.625rem",
+    ["--tweet-actions-line-height" as string]: "1.2",
+    ["--tweet-replies-font-size" as string]: "0.625rem",
+    ["--tweet-replies-line-height" as string]: "1.2",
+    ["--tweet-quoted-container-margin" as string]: "0.5rem 0",
   },
 };
 
 const SIZE_CLASS: Record<"sm" | "xs", string> = {
   sm: "max-w-[224px] text-[11px]",
-  xs: "max-w-full text-[9px]",
+  xs: "embedded-tweet-compact max-w-[420px] text-[13px]",
 };
 
 export function EmbeddedTweet({
@@ -65,7 +70,7 @@ function TweetSkeleton({ size }: { size: "sm" | "xs" }) {
   return (
     <div
       className={`rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] animate-pulse ${
-        size === "xs" ? "h-12 max-w-full" : "h-16 max-w-[224px]"
+        size === "xs" ? "h-20 max-w-[420px]" : "h-16 max-w-[224px]"
       }`}
     />
   );

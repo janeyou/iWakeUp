@@ -113,3 +113,25 @@ a { color: inherit; }
 
 .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Compact tweet card used inside the Lead drop on the home Today panel.
+   react-tweet uses CSS Modules (hashed class names), so we target via
+   substring attribute selectors that survive the hash. */
+.embedded-tweet-compact [class*="tweet-body"] {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.embedded-tweet-compact [class*="tweet-header"] [class*="avatar"] {
+  height: 26px;
+  width: 26px;
+}
+.embedded-tweet-compact [class*="tweet-header"] {
+  padding-bottom: 0.5rem;
+}
+.embedded-tweet-compact [class*="twitterIcon"] {
+  width: 18px;
+  height: 18px;
+}
