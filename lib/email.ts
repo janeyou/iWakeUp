@@ -4,7 +4,7 @@ import WeeklyDigest from "@/emails/WeeklyDigest";
 import type { EntryRow } from "@/lib/db";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_FROM = process.env.RESEND_FROM ?? "AI Radar <hello@radar.pmclaws.com>";
+const RESEND_FROM = process.env.RESEND_FROM ?? "AI Radar <hello@airadarapp.com>";
 
 const client = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 

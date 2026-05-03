@@ -142,7 +142,7 @@ export async function fetchTimelineNitter(
       const res = await fetch(url, {
         signal: controller.signal,
         headers: {
-          "User-Agent": "AI Radar/0.1 (+https://radar.pmclaws.com)",
+          "User-Agent": "AI Radar/0.1 (+https://airadarapp.com)",
           Accept: "application/rss+xml, application/xml, text/xml, */*",
         },
         redirect: "follow",

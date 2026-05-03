@@ -79,8 +79,8 @@ export default function WeeklyDigest({
 
           <Hr style={hr} />
           <Text style={footer}>
-            <Link href="https://radar.pmclaws.com" style={footerLink}>
-              radar.pmclaws.com
+            <Link href="https://airadarapp.com" style={footerLink}>
+              airadarapp.com
             </Link>{" "}
             ·{" "}
             <Link href={unsubscribeUrl} style={footerLink}>

@@ -1,7 +1,9 @@
 // Shared CORS handler for cross-origin POSTs from sister surfaces
-// (pmclaws.com, janeyoubradley.com) to radar.pmclaws.com /api/subscribe*.
+// (pmclaws.com, janeyoubradley.com) to AI Radar's /api/subscribe*.
 
 const ALLOWED_ORIGINS = new Set<string>([
+  "https://airadarapp.com",
+  "https://www.airadarapp.com",
   "https://radar.pmclaws.com",
   "https://pmclaws.com",
   "https://www.pmclaws.com",

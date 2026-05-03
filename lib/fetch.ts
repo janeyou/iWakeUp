@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-const USER_AGENT = "AI Radar/0.1 (+https://radar.pmclaws.com)";
+const USER_AGENT = "AI Radar/0.1 (+https://airadarapp.com)";
 const TIMEOUT_MS = 15_000;
 const MAX_BYTES = 200_000;
 
