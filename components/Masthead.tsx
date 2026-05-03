@@ -40,10 +40,10 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
         )}
       </div>
 
-      <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
-        <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
-          i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
-        </h1>
+      <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
+        i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
+      </h1>
+      <div className="mt-4">
         <RadarCat />
       </div>
 
