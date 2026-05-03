@@ -8,16 +8,20 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed": "tsx scripts/seed.ts",
-    "ingest": "tsx scripts/ingest-once.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "ingest": "tsx --env-file=.env.local scripts/ingest-once.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
+    "@react-email/components": "^1.0.12",
     "@vercel/postgres": "^0.10.0",
+    "cheerio": "^1.2.0",
     "next": "^16.2.4",
+    "next-themes": "^0.4.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-tweet": "^3.2.2",
+    "resend": "^6.12.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {

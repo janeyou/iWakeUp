@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAgentBySlug } from "@/content/agents";
-import { getEntriesForAgent, type EntryRow } from "@/lib/db";
+import {
+  getActivityByDay,
+  getEntriesForAgent,
+  type EntryRow,
+} from "@/lib/db";
 import { TimelineEntry } from "@/components/TimelineEntry";
+import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const revalidate = 300;
+
+const TEASER_LIMIT = 6;
 
 export default async function AgentPage({
   params,
@@ -28,8 +36,7 @@ export default async function AgentPage({
           {agent.name}
         </h1>
         <p className="mt-4 text-lg text-[var(--color-text-muted)]">
-          Coming soon. {agent.name} will join the tracker once Claude and Cursor
-          are stable.
+          Coming soon. {agent.name} will join the tracker once Claude clears the quality bar.
         </p>
         <a
           href={agent.officialUrl}
@@ -37,25 +44,27 @@ export default async function AgentPage({
           rel="noreferrer"
           className="mt-8 inline-block text-sm text-[var(--color-accent)]"
         >
-          Visit {agent.name} →
+          Visit {agent.name} ↗
         </a>
       </main>
     );
   }
 
-  const entries = await safeEntries(slug);
-  const grouped = groupByDate(entries);
+  const [entries, activity] = await Promise.all([
+    safeEntries(slug),
+    safeActivity(slug),
+  ]);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <main className="mx-auto max-w-5xl px-6 py-16">
       <Link
         href="/"
         className="text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text)]"
       >
-        ← Back
+        ← AI Radar
       </Link>
 
-      <header className="mt-8 mb-12 border-b border-[var(--color-border)] pb-8">
+      <header className="mt-8 mb-10 border-b border-[var(--color-border)] pb-8">
         <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">
           {agent.name}
         </h1>
@@ -69,75 +78,69 @@ export default async function AgentPage({
           >
             Official site ↗
           </a>
-          {agent.changelogUrl && (
+          {agent.sources.map((s) => (
             <a
-              href={agent.changelogUrl}
+              key={s.url}
+              href={s.url}
               target="_blank"
               rel="noreferrer"
               className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
             >
-              Changelog ↗
+              {s.label} ↗
             </a>
-          )}
-          {agent.xHandle && (
-            <a
-              href={`https://x.com/${agent.xHandle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
-            >
-              @{agent.xHandle} ↗
-            </a>
-          )}
+          ))}
         </div>
       </header>
 
-      {entries.length === 0 ? (
-        <p className="text-[var(--color-text-muted)]">
-          No entries yet. The first daily ingest will populate this timeline.
-        </p>
-      ) : (
-        <div className="space-y-10">
-          {grouped.map(([date, items]) => (
-            <section key={date}>
-              <h2 className="mb-6 text-sm font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
-                {date}
-              </h2>
-              <div>
-                {items.map((entry) => (
-                  <TimelineEntry key={entry.id} entry={entry} />
-                ))}
-              </div>
-            </section>
-          ))}
+      <div className="mb-10">
+        <ActivityHeatmap data={activity} agentSlug={slug} />
+      </div>
+
+      <section>
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
+            Recent drops
+          </h2>
+          <Link
+            href={`/drops?agent=${slug}`}
+            className="text-xs text-[var(--color-accent)] hover:underline"
+          >
+            See all {agent.name} drops →
+          </Link>
         </div>
-      )}
+
+        {entries.length === 0 ? (
+          <p className="text-[var(--color-text-muted)]">No entries yet.</p>
+        ) : (
+          <div>
+            {entries.map((entry) => (
+              <TimelineEntry key={entry.id} entry={entry} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <footer className="mt-20 border-t border-[var(--color-border)] pt-8">
+        <SiteFooter />
+      </footer>
     </main>
   );
 }
 
 async function safeEntries(slug: string): Promise<EntryRow[]> {
   try {
-    return await getEntriesForAgent(slug);
+    return await getEntriesForAgent(slug, { limit: TEASER_LIMIT });
   } catch (err) {
     console.error("[agent] db query failed:", err);
     return [];
   }
 }
 
-function groupByDate(entries: EntryRow[]): [string, EntryRow[]][] {
-  const map = new Map<string, EntryRow[]>();
-  for (const e of entries) {
-    const date = new Date(e.published_at).toLocaleDateString("en-US", {
-      timeZone: "America/Los_Angeles",
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const arr = map.get(date) ?? [];
-    arr.push(e);
-    map.set(date, arr);
+async function safeActivity(slug: string) {
+  try {
+    return await getActivityByDay(slug, 182);
+  } catch (err) {
+    console.error("[agent] activity query failed:", err);
+    return [];
   }
-  return Array.from(map.entries());
 }

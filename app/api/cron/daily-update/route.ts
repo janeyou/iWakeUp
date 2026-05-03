@@ -10,13 +10,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  const force = new URL(request.url).searchParams.get("force") === "true";
   const startedAt = new Date().toISOString();
-  const results = await runDailyIngestion();
+  const results = await runDailyIngestion({ force });
   const finishedAt = new Date().toISOString();
 
-  return NextResponse.json({
-    startedAt,
-    finishedAt,
-    results,
-  });
+  // Detect missing-column / missing-table errors and surface a clear hint.
+  const schemaErrors = results
+    .flatMap((r) => r.sources)
+    .filter((s) =>
+      s.error &&
+      (/column .* does not exist/i.test(s.error) ||
+        /relation .* does not exist/i.test(s.error))
+    );
+  const hint =
+    schemaErrors.length > 0
+      ? "Schema migration pending. Run `pnpm seed` to apply the latest schema, then retry."
+      : undefined;
+
+  return NextResponse.json({ startedAt, finishedAt, force, hint, results });
 }

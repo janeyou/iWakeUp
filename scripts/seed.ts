@@ -18,10 +18,14 @@ async function main() {
   console.log(`Schema applied (${statements.length} statements).`);
 
   for (const a of AGENTS) {
+    const firstChangelog = a.sources.find((s) => s.type === "changelog")?.url ?? null;
+    const firstX = a.sources.find((s) => s.type === "x");
+    const xHandle = firstX ? firstX.url.replace(/^https?:\/\/x\.com\//, "") : null;
+
     await sql`
       INSERT INTO agents (slug, name, status, official_url, x_handle, changelog_url, blurb)
-      VALUES (${a.slug}, ${a.name}, ${a.status}, ${a.officialUrl}, ${a.xHandle},
-              ${a.changelogUrl}, ${a.blurb})
+      VALUES (${a.slug}, ${a.name}, ${a.status}, ${a.officialUrl}, ${xHandle},
+              ${firstChangelog}, ${a.blurb})
       ON CONFLICT (slug) DO UPDATE SET
         name = EXCLUDED.name,
         status = EXCLUDED.status,

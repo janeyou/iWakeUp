@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,16 +16,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "iWakeUp — what AI agents shipped overnight",
+  title: "AI Radar, what AI agents shipped overnight",
   description:
-    "A live timeline of releases, changelog drops, and announcements from the AI agents you actually use. Updated daily at 5am PT.",
-  keywords: ["AI agents", "Claude", "Cursor", "agentic AI", "release tracker"],
+    "A live timeline of releases, changelog drops, and announcements from the AI agents you actually use. Updated daily at 5am PT. I wake up, there is another AI update.",
+  keywords: ["AI Radar", "AI agents", "Claude", "Cursor", "agentic AI", "release tracker", "iWakeUp"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

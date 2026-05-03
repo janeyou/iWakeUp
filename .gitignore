@@ -30,3 +30,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# personal Obsidian working docs (PLAN drafts, audits, etc); never committed
+/notes
+/notes/
