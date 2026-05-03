@@ -37,33 +37,15 @@ export function SubscribeForm({ source }: { source?: string }) {
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-        <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-accent)]">
-          ✓ Subscribed
-        </p>
-        <p className="mt-2 text-base text-[var(--color-text-muted)]">{message}</p>
-      </div>
+      <p className="text-sm text-[var(--color-accent)]">
+        ✓ {message}
+      </p>
     );
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8"
-    >
-      <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-accent)]">
-        Weekly digest
-      </p>
-      <h2 className="mt-2 text-xl font-semibold text-[var(--color-text)]">
-        One email Monday morning. The week in AI agents.
-      </h2>
-      <p className="mt-1 font-mono text-xs italic text-[var(--color-text-faint)]">
-        i wake up, there is another AI update.
-      </p>
-      <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-        Curated releases from the agents we track. Unsubscribe one click anytime.
-      </p>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+    <form onSubmit={onSubmit} className="w-full">
+      <div className="flex w-full max-w-md flex-col gap-3 sm:mx-auto sm:flex-row">
         <input
           type="email"
           required
@@ -87,7 +69,7 @@ export function SubscribeForm({ source }: { source?: string }) {
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="rounded-full bg-[var(--color-accent)] px-5 py-2 text-sm font-medium text-[var(--color-bg)] transition hover:opacity-90 disabled:opacity-50"
+          className="rounded-full bg-[var(--color-accent)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {status === "submitting" ? "Sending..." : "Subscribe"}
         </button>

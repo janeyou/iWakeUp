@@ -7,12 +7,12 @@ export function SiteFooter() {
         <div>
           Built by{" "}
           <a
-            href="https://janeyou.me"
+            href="https://www.janeyoubradley.com/"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--color-text)]"
           >
-            Jane You
+            Jane You Bradley
           </a>
           {" "}with Claude Code &amp; Design. Maintained by RaeyaBot. Daily ingest 5am PT.
         </div>
