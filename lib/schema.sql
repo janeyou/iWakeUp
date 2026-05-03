@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS entries (
 
 ALTER TABLE entries ADD COLUMN IF NOT EXISTS entry_type TEXT NOT NULL DEFAULT 'release';
 ALTER TABLE entries ADD COLUMN IF NOT EXISTS video_url TEXT;
+-- LLM-derived quality signal for X tweets. 0 noise (never inserted),
+-- 1 low, 2 medium, 3 high. Nullable for non-X entries.
+ALTER TABLE entries ADD COLUMN IF NOT EXISTS quality_score SMALLINT;
+ALTER TABLE entries ADD COLUMN IF NOT EXISTS quality_reason TEXT;
 
 CREATE INDEX IF NOT EXISTS entries_agent_published
   ON entries(agent_slug, published_at DESC);

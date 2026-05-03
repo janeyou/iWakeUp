@@ -19,6 +19,7 @@ import {
   tweetUrl,
   type XTweet,
 } from "@/lib/x";
+import { filterTweetsForQuality, type TweetQuality } from "@/lib/xQuality";
 
 export type SourceResult = {
   url: string;
@@ -274,7 +275,19 @@ async function ingestXSource(
     await setSourceXUserId(source.url, xUserId);
   }
 
-  const entries = tweets.map((t) => tweetToEntry(t, handle));
+  // LLM quality pass. Drops noise; tags everything kept with score+kind+reason.
+  // Always advance the since_id watermark over the FULL tweet set, even the
+  // dropped ones, so we don't re-evaluate them next ingest.
+  const scored = await filterTweetsForQuality(tweets, {
+    agentName: agent.name,
+    handle,
+  });
+  const kept = scored.filter((s) => s.quality.keep && s.quality.score > 0);
+  const dropped = scored.length - kept.length;
+
+  const entries = kept.map(({ tweet, quality }) =>
+    tweetToEntry(tweet, handle, quality)
+  );
   const inserted = await persistEntries(agent.slug, entries);
 
   const newestId =
@@ -282,21 +295,26 @@ async function ingestXSource(
       ? tweets.reduce((acc, t) => (safeBigCompare(t.id, acc) > 0 ? t.id : acc), tweets[0].id)
       : (cached?.content_hash ?? null);
 
+  const note =
+    dropped > 0
+      ? `via ${strategy}; LLM kept ${kept.length}/${tweets.length}`
+      : `via ${strategy}`;
+
   await upsertSourceState({
     url: source.url,
     agent_slug: agent.slug,
     source_type: "x",
     content_hash: newestId,
     last_status: 200,
-    last_entry_count: tweets.length,
-    last_error: `via ${strategy}`,
+    last_entry_count: kept.length,
+    last_error: note,
   });
 
   return {
     ...base,
     status: tweets.length === 0 ? "no_new" : "inserted",
     inserted,
-    found: tweets.length,
+    found: kept.length,
   };
 }
 
@@ -309,16 +327,18 @@ function safeBigCompare(a: string, b: string): number {
   }
 }
 
-function tweetToEntry(t: XTweet, handle: string) {
+function tweetToEntry(t: XTweet, handle: string, quality?: TweetQuality) {
   return {
     title: tweetTitle(t.text),
     summary: tweetSummary(t.text),
     source_url: tweetUrl(handle, t.id),
     source_type: "x" as const,
-    entry_type: classifyTweet(t.text),
+    entry_type: quality?.kind ?? classifyTweet(t.text),
     tweet_id: t.id,
     video_url: null,
     published_at: t.created_at,
+    quality_score: quality?.score ?? null,
+    quality_reason: quality?.reason ?? null,
   };
 }
 
@@ -333,6 +353,8 @@ async function persistEntries(
     tweet_id: string | null;
     video_url?: string | null;
     published_at: string;
+    quality_score?: number | null;
+    quality_reason?: string | null;
   }>
 ): Promise<number> {
   if (entries.length === 0) return 0;
@@ -347,6 +369,8 @@ async function persistEntries(
       tweet_id: e.tweet_id,
       video_url: e.video_url ?? null,
       published_at: e.published_at,
+      quality_score: e.quality_score ?? null,
+      quality_reason: e.quality_reason ?? null,
     }))
   );
 }

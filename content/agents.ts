@@ -62,6 +62,10 @@ export const AGENTS: Agent[] = [
     sources: [
       { type: "x", url: "https://x.com/OpenAI", label: "@OpenAI" },
       { type: "x", url: "https://x.com/OpenAIDevs", label: "@OpenAIDevs" },
+      // Leadership account. The LLM x-quality filter (lib/xQuality.ts) keeps
+      // only product-relevant tweets and drops off-topic noise. Add more
+      // leadership / product handles here once verified.
+      { type: "x", url: "https://x.com/sama", label: "@sama" },
     ],
   },
   {

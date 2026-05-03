@@ -26,6 +26,10 @@ export type NewEntry = {
   tweet_id: string | null;
   video_url: string | null;
   published_at: string;
+  /** LLM verdict, X tweets only for now. 1-3 = signal kept, null otherwise. */
+  quality_score?: number | null;
+  /** One-sentence audit reason from the LLM filter. */
+  quality_reason?: string | null;
 };
 
 export async function getEntriesForAgent(
@@ -225,11 +229,11 @@ export async function insertEntries(entries: NewEntry[]): Promise<number> {
     const { rowCount } = await sql`
       INSERT INTO entries
         (agent_slug, title, summary, source_url, source_type, entry_type,
-         tweet_id, video_url, published_at)
+         tweet_id, video_url, published_at, quality_score, quality_reason)
       VALUES
         (${e.agent_slug}, ${e.title}, ${e.summary}, ${e.source_url},
          ${e.source_type}, ${e.entry_type}, ${e.tweet_id}, ${e.video_url},
-         ${e.published_at})
+         ${e.published_at}, ${e.quality_score ?? null}, ${e.quality_reason ?? null})
       ON CONFLICT (source_url) DO NOTHING
     `;
     inserted += rowCount ?? 0;
