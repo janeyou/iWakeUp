@@ -74,30 +74,16 @@ export default async function HomePage() {
       </section>
 
       <section className="border-t border-b border-[var(--color-border)] bg-[var(--color-surface-2)] py-14">
-        <div className="mx-auto max-w-6xl px-8 sm:px-12 grid gap-12 md:grid-cols-2">
-          <div>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">Stay in the loop</p>
-            <h3 className="mt-2 font-[family-name:var(--font-display)] font-normal text-3xl tracking-[-0.02em]">
-              One email a week, with the highlights.
-            </h3>
-            <p className="mt-3 max-w-prose text-[var(--color-text-muted)]">
-              We bundle the week's notable releases, news, and posts into a Sunday-evening digest. Free, no ads, unsubscribe in one click.
-            </p>
-            <div className="mt-4">
-              <SubscribeForm source="home" />
-            </div>
-          </div>
-          <div>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">Missing a tool?</p>
-            <h3 className="mt-2 font-[family-name:var(--font-display)] font-normal text-3xl tracking-[-0.02em]">
-              Suggest something we should track.
-            </h3>
-            <p className="mt-3 max-w-prose text-[var(--color-text-muted)]">
-              If a coding agent or AI product worth watching isn&apos;t on the list, drop a name. We add 1 to 2 new tools every month.
-            </p>
-            <div className="mt-4">
-              <SuggestToolForm />
-            </div>
+        <div className="mx-auto max-w-2xl px-8 sm:px-12 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">Stay in the loop</p>
+          <h3 className="mt-2 font-[family-name:var(--font-display)] font-normal text-2xl sm:text-3xl tracking-[-0.01em]">
+            One email a week, with the highlights.
+          </h3>
+          <p className="mt-3 text-[var(--color-text-muted)]">
+            We bundle the week&apos;s notable releases, news, and posts into a Sunday-evening digest. Free, no ads, unsubscribe in one click.
+          </p>
+          <div className="mt-5 flex justify-center">
+            <SubscribeForm source="home" />
           </div>
         </div>
       </section>
@@ -108,8 +94,12 @@ export default async function HomePage() {
           The word covers everything from autocomplete to autonomous deputies. Jane wrote a 5-level framework, with capability and PM-trust ratings on each, so you can tell what&apos;s what.
         </p>
         <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 items-center">
-          <a href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026" target="_blank" rel="noreferrer"
-            className="rounded-lg bg-[var(--color-text)] px-4 py-2 text-sm font-medium text-[var(--color-bg)] hover:opacity-85">
+          <a
+            href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-transparent hover:text-[var(--color-accent)]"
+          >
             Read the framework essay →
           </a>
           <Link href="/learn" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
@@ -118,7 +108,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <SiteFooter />
+      <SiteFooter suggest={<SuggestToolForm compact />} />
     </main>
   );
 }

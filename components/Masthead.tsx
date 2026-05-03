@@ -41,10 +41,8 @@ export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }:
         )}
       </div>
 
-      <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(40px,6vw,76px)] leading-[0.98] tracking-[-0.025em] text-[var(--color-text)]">
-        i wake up,
-        <br />
-        there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
+      <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
+        i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
       </h1>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1.4fr_1fr] items-end">
