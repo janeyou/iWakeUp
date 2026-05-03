@@ -78,7 +78,7 @@ function RadarCat() {
       {"      /\\_/\\\n"}
       {"     ( ◕ω◕ )\n"}
       {"      > ^ <\n"}
-      <span className="text-[var(--color-text-faint)]">{" wake · check · update"}</span>
+      <span className="text-[var(--color-text-faint)]">{"   i just wake up"}</span>
     </pre>
   );
 }
