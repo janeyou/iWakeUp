@@ -40,9 +40,12 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
         )}
       </div>
 
-      <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
-        i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
-      </h1>
+      <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
+        <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
+          i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
+        </h1>
+        <RadarCat />
+      </div>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1.4fr_1fr] items-end">
         <p className="text-xl leading-snug text-[var(--color-text-muted)] max-w-[28ch]">
@@ -55,6 +58,28 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
         </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * Terminal-text rendition of the tinfoil-hat-cat meme. Hat in accent teal,
+ * cat body in muted text, cycle arrows in faint text. Uses Geist Mono so it
+ * reads as a terminal block.
+ */
+function RadarCat() {
+  return (
+    <pre
+      aria-label="i wake up, there is another AI update"
+      className="font-mono text-[10px] sm:text-[11px] leading-[1.2] whitespace-pre text-[var(--color-text-muted)] select-none"
+    >
+      <span className="text-[var(--color-text-faint)]">{"  ↺   "}</span>
+      <span className="text-[var(--color-accent)]">{"░▒▓▒░"}</span>
+      <span className="text-[var(--color-text-faint)]">{"   ↻\n"}</span>
+      {"      /\\_/\\\n"}
+      {"     ( ◕ω◕ )\n"}
+      {"      > ^ <\n"}
+      <span className="text-[var(--color-text-faint)]">{" wake · check · update"}</span>
+    </pre>
   );
 }
 

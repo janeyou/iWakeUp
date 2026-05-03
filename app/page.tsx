@@ -80,7 +80,7 @@ export default async function HomePage() {
             href="https://www.janeyoubradley.com/#/blog/agentic-ai-landscape-2026"
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-transparent hover:text-[var(--color-accent)]"
+            className="rounded-lg border border-[var(--color-border-strong)] bg-white px-4 py-2 text-sm font-medium text-[#1a1a1a] transition hover:border-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
           >
             Read the framework essay →
           </a>

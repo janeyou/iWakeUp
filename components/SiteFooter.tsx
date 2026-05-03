@@ -2,12 +2,8 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="mx-auto max-w-6xl px-8 sm:px-12 pt-12 pb-16">
-      <div className="font-[family-name:var(--font-display)] font-normal text-[clamp(22px,3vw,34px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text-muted)]">
-        i wake up, there is <em className="italic text-[var(--color-accent)]">another one</em>.
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-[var(--color-border)] pt-5 text-sm text-[var(--color-text-faint)]">
+    <footer className="mx-auto mt-12 max-w-6xl border-t border-[var(--color-border)] px-8 pb-16 pt-5 text-sm text-[var(--color-text-faint)] sm:px-12">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div>
           Built by{" "}
           <a
