@@ -1,20 +1,37 @@
-# AI Radar — Taste
+# AI Radar, Taste
 
 > The design system and editorial voice for `radar.pmclaws.com`. Last updated 2026-05-03.
 
 This file is the canonical source of truth for "what AI Radar looks and feels like." If you're touching UI, read this first. If you're adding a component, make sure it speaks this language.
 
+This taste evolved out of `janeyoubradley.com`, the personal site whose `taste.md` describes a "quiet, Geist-set, type-led" aesthetic. AI Radar is a *cousin*, not a fork: it borrows the typography, restraint, and weight discipline, and adds one editorial moment (the masthead headline) plus a single accent color (purple) for the live signal.
+
 ## One-line voice
 
-> **Editorial, not a dashboard.** Type-led, terse, restrained. A daily paper for AI shipments, not a product surface.
+> **A daily index, not a dashboard.** Geist-set, light-weight, mostly black-on-paper. The reader should feel like they opened a small typed bulletin, not a SaaS console.
 
-A reader should feel like they opened a small, focused newspaper, not a SaaS console. Use display serif for moments of weight; mono for time, dates, and meta; sans for body. Use color sparingly — only for *agent identity* and the lead accent.
+## Inheritance from janeyoubradley.com
 
-## North-star moments
+We adopt these rules verbatim:
 
-1. **Masthead.** A confident headline ("i wake up, there is another *AI update*."), an ISSUE / DATE / LIVE-INGEST line, and a three-stat strip (tools tracked, drops 24h, current streak). Black-and-white with a single pulsing accent dot.
-2. **Lead drop.** One dominant card with the day's most important shipment: agent in brand color, a real headline at display weight, summary, and an embedded tweet when the source is X. Three secondary drops sit beside it as a vertical stack.
-3. **Activity heatmap.** A 26-week × 7-day grid that reads as a single graphic, not as a tiny widget. Streak + busiest-day callouts on the right.
+- **One typeface.** Geist for everything (display, body, UI). Geist Mono for time, dates, kickers, and meta only.
+- **Light weights only.** Body 300, display 400. Never use 600+ except for the rare keyboard-shortcut chip. SaaS-bold is forbidden.
+- **No em-dashes.** Anywhere. In copy, error messages, code comments. Use comma, period, colon, parens, or split sentences.
+- **Italic is rare.** Reserved for exactly one moment per page (see "The italic moment" below). Never on body copy, never on section titles, never on UI.
+- **Light is default.** Dark mode is a toggle, not a stance. Both themes use neutral palettes (saturation < 0.02 on whites and dark backgrounds).
+- **No gradients on backgrounds.** A single ambient agent-tinted radial glow on the lead drop card is the only exception, and it's so subtle most readers won't consciously notice it.
+- **No icon-only navigation.** Mono labels everywhere. Icons appear only on the theme toggle and subscribe button.
+- **Type does the work.** Hierarchy comes from size, weight (within the 300/400 range), and space, not from color, borders, or shadow stacks.
+
+## The italic moment
+
+Each page may contain **one** italic phrase, and only one. On the home page that is the punchline of the masthead headline:
+
+> i wake up, there is another *AI update*.
+
+The single italic word is also accent-colored (purple). This is the signature beat. If you find yourself adding a second italic phrase on the same page, stop and ask whether one of them should be reset to roman.
+
+The footer echoes the masthead with a smaller version of the same line, but on a different page render, so the home `<main>` shows the masthead italic, the footer below it gets one of its own. That's still one-per-region, not one-per-document; we accept the duplication because the footer is its own typographic frame.
 
 ## Tokens
 
@@ -44,7 +61,7 @@ The light surface is intentionally **warm-neutral** (slightly toward off-white p
 
 The accent ONLY appears on:
 - The pulsing dot beside the wordmark
-- "Live" / kicker labels
+- "Live" / kicker labels (mono micro-caps in `--accent`)
 - Active filter outlines + `is-active` cell rings
 - Subscribe button hover, primary CTA chrome
 - Lead drop CTA arrow
@@ -72,7 +89,7 @@ For cross-agent surfaces only (Lead drop tint, drop rows, timeline tile glow, gl
 
 When adding a new tracked agent, define `--agent-<slug>` and `--agent-<slug>-soft` (12% light / 15% dark alpha) in both `:root` and `html.dark`. There is no auto-generation.
 
-### Type vs agent — when to use which
+### Type vs agent: when to use which
 
 | Surface | Color family |
 |---|---|
@@ -82,23 +99,38 @@ When adding a new tracked agent, define `--agent-<slug>` and `--agent-<slug>-sof
 
 ### Fonts
 
-- `--font-display` `"Instrument Serif", "Iowan Old Style", Palatino, Georgia, serif` — used at large sizes for masthead, day numerals, lead title, foot punchline. Italic by default.
-- `--font-sans` `Inter` — body, UI labels, form controls.
-- `--font-mono` `JetBrains Mono` — every uppercase tracking-wider label, all dates and times, all kickers, agent labels in TodayPanel.
+- `--font-sans` `Geist, ui-sans-serif, system-ui, sans-serif`, used for **everything** that isn't mono. Display sizes use the same family at weight 400 with tighter tracking; body uses weight 300.
+- `--font-mono` `Geist Mono, ui-monospace, SFMono-Regular, monospace`, every uppercase tracking-wider label, all dates and times, all kickers, agent labels in TodayPanel.
 
-The 3-font stack is non-negotiable. Do not introduce a fourth typeface. If you need emphasis, lean on display weight or italics, not a new family.
+There is no third typeface. Where the older taste called for "Instrument Serif italic" on display moments, we now use **Geist 400 with the italic reserved for the one accented phrase**. The change is deliberate: the serif felt like a magazine; AI Radar is a daily bulletin.
+
+Load Geist via the official `geist` npm package or the Vercel-hosted CDN. Do not substitute Inter, IBM Plex Sans, or any "Geist-like" alternative. The metrics matter.
+
+#### Weight discipline
+
+| Use | Weight |
+|---|---|
+| Body copy, summaries, blurbs | 300 |
+| Display (headlines, lead title, section titles, profile hero) | 400 |
+| Mono labels, kickers, dates | 400 |
+| The kbd chip and live pills | 500 (max) |
+| Buttons, links | 400 |
+
+Do not use 600 or 700 anywhere in the production app. If a moment feels under-weighted, scale up or add space; do not reach for a heavier weight.
 
 ### Radii + spacing
 
-- `--r-sm` 6px (tags, swatches), `--r-md` 10px (drop rows, entries), `--r-lg` 16px (cards, heatmap), `--r-xl` 22px (hero modules, if any).
-- Section padding: 56px vertical default; 36px when `data-density="compact"`.
-- Card padding: 24px (`--pad-card`); 22px on tiles for visual rhythm.
+- `--r-sm` 6px (tags, swatches), `--r-md` 10px (drop rows, entries), `--r-lg` 12px (cards, heatmap), `--r-xl` 16px (hero modules, if any).
+- Section padding: 64px vertical default; 36px when `data-density="compact"`.
+- Card padding: 24px (`--pad-card`); 32px on the lead drop for visual weight.
 
-## Components — visual contract
+The radii are deliberately conservative, janeyoubradley.com uses 8–12px; we go a hair larger because the live nature of the data benefits from a softer container, but never the 22px+ bubble look of consumer SaaS.
+
+## Components: visual contract
 
 ### Top nav
 
-Sticky, semi-transparent backdrop-blur, 56px tall. Wordmark on the left (mono ticker by default; italic serif and bold sans are alt styles). Mono nav links. Theme toggle and a subscribe icon-button on the right. Active link gets `--surface-2` pill.
+Sticky, semi-transparent backdrop-blur, 56px tall. Wordmark on the left (italic Geist by default; ticker mono and medium sans are alt styles exposed in the prototype's Tweaks panel only). Mono nav links. Theme toggle and a subscribe icon-button on the right. Active link gets `--surface-2` pill.
 
 ### Masthead (home)
 
@@ -109,8 +141,8 @@ there is another *AI update*.
 [ tagline ]                       [ tools ] [ drops 24h ] [ streak ]
 ```
 
-- Headline: display serif, italic accent on the punchline phrase.
-- Sub-row: tagline left (display italic, muted), 3-stat strip right (mono labels, display numerals).
+- Headline: Geist 400, `clamp(36px, 5.2vw, 64px)`, `letter-spacing: -0.03em`. The single italic phrase is also accent-colored.
+- Sub-row: tagline left (Geist 300, muted), 3-stat strip right (mono labels, Geist 300 numerals at 30px).
 
 ### Lead drop
 
@@ -118,11 +150,13 @@ A two-column band: a single Lead card on the left (1.6fr), a vertical stack of 3
 
 ```
 [ AGENT NAME ] [ release/news/post ]            [ relative time ]
-*Display-italic title that runs 1–2 lines*
-muted summary line, max 56ch
+Display title that runs 1–2 lines, Geist 400
+muted summary line, max 56ch, Geist 300
 [ optional embedded tweet card ]
                                                read source →
 ```
+
+The lead title is **not** italic and **not** bold. Hierarchy comes from size (28px) and the surrounding space.
 
 ### Drop row
 
@@ -131,8 +165,8 @@ Compact: agent dot · title (clamp-2) · agent · type · time PT. Hover lifts t
 ### Timeline tile (home grid)
 
 3-up grid (2-up under 1000px, 1-up under 640px). Each tile:
-- Display-italic agent name + LIVE pill in agent color
-- Blurb (sans, muted)
+- Geist 400 agent name (20px) + LIVE pill in agent color
+- Blurb (Geist 300, muted)
 - 30-day mini sparkline using agent color, 4 intensities
 - Latest entry title (clamp-2)
 - Foot row: drops/7d count + "View profile →"
@@ -146,8 +180,8 @@ Dashed-border container directly under the tiles grid. Each queued tool is a chi
 ### Activity heatmap
 
 26 weeks × 7 days. Cell size 13px by default (range 10–20, exposed via Tweaks for layout work). Wrapped in a card. Two callouts to the right of the title:
-- **Current streak** — `<n>` days
-- **Busiest day** — `<count>` on `<Mon DD>`
+- **Current streak**, `<n>` days
+- **Busiest day**, `<count>` on `<Mon DD>`
 
 A custom DOM tooltip, not the native title attribute, follows the cell. Click → filter the feed to that date. Active date gets an accent ring on the cell.
 
@@ -163,31 +197,33 @@ Sun                12 updates
 May 03            • Claude • Cursor • Codex            ▾
 ```
 
-- Weekday in mono micro-cap, date as display numeral + month.
+- Weekday in mono micro-cap, date as Geist 300 numeral + month.
 - Body inset to 154px (matching the date column width) for a typographic ledger look.
 
 ### Entry (in day group)
 
-3px agent-colored rail + 1fr body + time PT. TypeBadge first, then optional agent label, then source-type label. Title is sans 15px, hover → accent. Summary muted.
+3px agent-colored rail + 1fr body + time PT. TypeBadge first, then optional agent label, then source-type label. Title is Geist 400 at 15px, hover → text gets darker (no accent on body copy). Summary muted.
 
 ### Stay-in-the-loop band
 
 Two columns inside a soft `--surface-2` band with top + bottom hairlines.
-- Left: kicker → display headline → muted intro → SubscribeForm.
-- Right: kicker → display headline → muted intro → SuggestForm.
+- Left: kicker → Geist 400 headline → muted intro → SubscribeForm.
+- Right: kicker → Geist 400 headline → muted intro → SuggestForm.
 
-Forms use 8px radius inputs, accent focus ring, dark primary buttons (`--text` background, `--bg` text — high-contrast, not accent). Success states return an inline accent-soft band with a "Subscribe another →" / "Suggest another →" reset link.
+Forms use 8px radius inputs, accent focus ring, dark primary buttons (`--text` background, `--bg` text, high-contrast, not accent). Success states return an inline accent-soft band with a "Subscribe another →" / "Suggest another →" reset link.
 
 ### Footer
 
-Echoes the masthead with a smaller display-italic punchline ("i wake up, there is *another one*."), then a hairline + mono credit row + nav links. Credit copy:
+Echoes the masthead with a smaller Geist 400 punchline ("i wake up, there is *another one*."), then a hairline + mono credit row + nav links. Credit copy:
 
 > Built by Jane You (with Claude Code & Design) · maintained by RaeyaBot · daily ingest 5am PT
 
+Note the middle dots, not em-dashes.
+
 ## Density and rhythm
 
-- Default density is `cozy`. `compact` shrinks section padding 56→36px.
-- Vertical rhythm relies on consistent 24px / 56px stops — avoid magic numbers.
+- Default density is `cozy`. `compact` shrinks section padding 64→36px.
+- Vertical rhythm relies on consistent 24px / 64px stops, avoid magic numbers.
 - Tiles have `transform: translateY(-1px)` on hover. Drop rows do not. Use motion *only* on top-level click targets.
 
 ## Motion
@@ -200,19 +236,23 @@ Echoes the masthead with a smaller display-italic punchline ("i wake up, there i
 ## What we do NOT do
 
 - No emoji as decoration.
-- No em-dashes anywhere — copy, error messages, code comments. Use comma, period, colon, parens, or split sentences.
-- No gradients on backgrounds. The single radial glow on lead/tiles is *agent-tinted*, low alpha, and ambient — not decorative.
+- No em-dashes anywhere, copy, error messages, code comments. Use comma, period, colon, parens, or split sentences.
+- No gradients on backgrounds. The single radial glow on lead/tiles is *agent-tinted*, low alpha, and ambient, not decorative.
 - No icon-only navigation. Mono labels everywhere; icons are reserved for theme toggle and subscribe.
 - No skeuomorphic shadow stacks. Only borders + subtle hover state changes.
 - No marketing copy. Every line should sound like a librarian, not a launch page.
 - No third font.
+- No font weight 600 or above. (Single 500 exception for the kbd chip.)
 - No accent color on body copy. Accent is for moments, not paragraphs.
+- No italic outside the one accented phrase per region.
 
 ## Tweakable surface (in the prototype only)
 
 The static prototype exposes these knobs through the in-page Tweaks panel:
-`theme`, `accent` (purple|coral|teal|lime), `displayFont` (serif|sans), `wordmarkStyle` (ticker|italic|bold), `density` (cozy|compact), `heatmapCell` (10–20px). These are *for design exploration* — production ships the locked defaults: `theme=system`, `accent=purple`, `displayFont=serif`, `wordmarkStyle=italic`, `density=cozy`, `heatmapCell=13`.
+`theme`, `accent` (purple|coral|teal|lime), `displayFont` (sans|sans), `wordmarkStyle` (ticker|italic|bold), `density` (cozy|compact), `heatmapCell` (10–20px). These are *for design exploration*, production ships the locked defaults: `theme=system`, `accent=purple`, `displayFont=sans`, `wordmarkStyle=italic`, `density=cozy`, `heatmapCell=13`.
+
+The legacy `displayFont=serif` mode is retained in the prototype as a historical reference (it shows what the Instrument Serif version felt like) but should not be used as a starting point for new design work.
 
 ## When in doubt
 
-Ask: "Would a small newspaper editor approve of this?" If the answer is no, redesign.
+Ask: "Does this look like janeyoubradley.com would link to it without explanation?" If the answer is no, redesign. The site should look like it lives in the same family as Jane's personal site, with a single accent (purple) and one editorial moment (the masthead) marking it as the bulletin variant.

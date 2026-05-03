@@ -20,7 +20,7 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
     <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div>
-          <h3 className="font-[family-name:var(--font-display)] italic text-xl tracking-tight">Activity, last 6 months</h3>
+          <h3 className="font-[family-name:var(--font-display)] font-normal text-xl tracking-[-0.02em]">Activity, last 6 months</h3>
           <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-[var(--color-text-faint)]">
             {single ? "by entry type" : "by agent · daily"}
           </div>
@@ -73,8 +73,8 @@ function Callout({ label, value, unit }: { label: string; value: string; unit?: 
   return (
     <div>
       <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">{label}</div>
-      <div className="font-[family-name:var(--font-display)] italic text-2xl text-[var(--color-text)]">
-        <em className="text-[var(--color-accent)] not-italic">{value}</em> {unit && <span className="text-base text-[var(--color-text-muted)]">{unit}</span>}
+      <div className="font-[family-name:var(--font-display)] font-normal text-2xl tracking-[-0.02em] text-[var(--color-text)]">
+        <span className="text-[var(--color-accent)]">{value}</span> {unit && <span className="text-base font-normal text-[var(--color-text-muted)]">{unit}</span>}
       </div>
     </div>
   );
@@ -180,7 +180,7 @@ function computeStreak(map: Map<string, DayInfo>): number {
 function busiestDay(map: Map<string, DayInfo>): { value: string; unit: string } {
   let best = { date: "", total: -1 };
   for (const [d, v] of map) if (v.total > best.total) best = { date: d, total: v.total };
-  if (!best.date) return { value: "—", unit: "" };
+  if (!best.date) return { value: ",", unit: "" };
   const dt = new Date(best.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return { value: `${best.total}`, unit: `on ${dt}` };
 }

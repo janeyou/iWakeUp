@@ -26,7 +26,7 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
       }}
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-[family-name:var(--font-display)] italic text-2xl tracking-tight">{agent.name}</h3>
+        <h3 className="font-[family-name:var(--font-display)] font-normal text-2xl tracking-[-0.02em]">{agent.name}</h3>
         <span
           className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider"
           style={{ color: `var(--color-agent-${slug}, var(--color-accent))` }}
@@ -58,7 +58,7 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
 
       <div className="mt-auto flex items-center justify-between border-t border-[var(--color-border)] pt-3 font-mono text-[10.5px] uppercase tracking-wide text-[var(--color-text-faint)]">
         <span>
-          <span className="font-semibold text-[var(--color-text)]">{recent7}</span> drops · 7d
+          <span className="font-medium text-[var(--color-text)]">{recent7}</span> drops · 7d
         </span>
         <span style={{ color: `var(--color-agent-${slug}, var(--color-accent))` }}>View profile →</span>
       </div>
