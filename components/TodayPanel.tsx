@@ -52,19 +52,25 @@ function Lead({ entry }: { entry: EntryRow }) {
       }}
     >
       <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-wider">
-        <span className="font-semibold" style={{ color: `var(--color-agent-${slug}, var(--color-text))` }}>
+        <span className="font-medium" style={{ color: `var(--color-agent-${slug}, var(--color-text))` }}>
           {agent?.name ?? slug}
         </span>
         <TypeBadge type={entry.entry_type} />
         <span className="ml-auto text-[var(--color-text-faint)]">{relTime(entry.published_at)}</span>
       </div>
-      <h3 className="font-[family-name:var(--font-display)] italic text-[28px] leading-[1.15] tracking-tight text-[var(--color-text)]">
+      <h3 className="font-[family-name:var(--font-display)] font-normal text-[28px] leading-[1.15] tracking-[-0.015em] text-[var(--color-text)]">
         {entry.title}
       </h3>
       {entry.summary && (
         <p className="text-base leading-relaxed text-[var(--color-text-muted)] max-w-[56ch]">{entry.summary}</p>
       )}
-      {isTweet && entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} size="xs" />}
+      {isTweet && entry.tweet_id && (
+        // Compact embed, capped at 420px so it never out-shouts the lead headline.
+        // Body clamps to 3 lines; padding/avatar are tightened in EmbeddedTweet's `compact` mode.
+        <div className="max-w-[420px] w-full">
+          <EmbeddedTweet id={entry.tweet_id} size="xs" compact />
+        </div>
+      )}
       <div className="mt-auto inline-flex items-center gap-1.5 font-mono text-[11.5px] uppercase tracking-wide text-[var(--color-accent)]">
         Read source →
       </div>
@@ -91,7 +97,7 @@ function DropRow({ entry }: { entry: EntryRow }) {
       <div>
         <div className="line-clamp-2 text-sm leading-snug text-[var(--color-text)]">{entry.title}</div>
         <div className="mt-1 flex gap-2 font-mono text-[10.5px] uppercase tracking-wide text-[var(--color-text-faint)]">
-          <span className="font-semibold" style={{ color: `var(--color-agent-${slug}, var(--color-text-muted))` }}>
+          <span className="font-medium" style={{ color: `var(--color-agent-${slug}, var(--color-text-muted))` }}>
             {agent?.name ?? slug}
           </span>
           <span>·</span>
