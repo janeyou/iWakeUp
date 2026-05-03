@@ -26,7 +26,7 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
       }}
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-[family-name:var(--font-display)] italic text-2xl tracking-tight">{agent.name}</h3>
+        <h3 className="font-[family-name:var(--font-display)] font-bold text-2xl tracking-[-0.02em]">{agent.name}</h3>
         <span
           className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider"
           style={{ color: `var(--color-agent-${slug}, var(--color-accent))` }}

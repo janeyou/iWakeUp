@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* AI Radar, dark by default. The light scope is opt-in via :where(html:not(.dark)). */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -31,39 +32,11 @@
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Instrument Serif", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-display: "Space Grotesk", "Inter Display", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Light tokens (default). See taste.md. */
+/* Dark tokens are the default. Light is the opt-in alt. See taste.md. */
 :root {
-  --bg: rgb(251, 251, 251);
-  --surface: #ffffff;
-  --surface-2: #f7f7f6;
-  --surface-hover: #f0efed;
-  --border: #e7e5e1;
-  --border-strong: #d0cdc6;
-  --text: #1a1a1a;
-  --text-muted: #6b6b6b;
-  --text-faint: #9a9a98;
-  --accent: oklch(0.55 0.18 290);
-  --accent-soft: oklch(0.55 0.18 290 / 0.10);
-
-  --release: oklch(0.55 0.18 290);
-  --release-soft: oklch(0.55 0.18 290 / 0.12);
-  --news: oklch(0.55 0.13 70);
-  --news-soft: oklch(0.55 0.13 70 / 0.12);
-  --post: oklch(0.55 0.14 220);
-  --post-soft: oklch(0.55 0.14 220 / 0.12);
-
-  --agent-claude: oklch(0.62 0.11 45);
-  --agent-claude-soft: oklch(0.62 0.11 45 / 0.12);
-  --agent-cursor: oklch(0.30 0.01 250);
-  --agent-cursor-soft: oklch(0.30 0.01 250 / 0.10);
-  --agent-codex: oklch(0.55 0.13 165);
-  --agent-codex-soft: oklch(0.55 0.13 165 / 0.12);
-}
-
-html.dark {
   --bg: oklch(0.13 0.01 250);
   --surface: oklch(0.17 0.01 250);
   --surface-2: oklch(0.20 0.01 250);
@@ -91,6 +64,35 @@ html.dark {
   --agent-codex-soft: oklch(0.72 0.13 165 / 0.15);
 }
 
+/* Reader-opt-in light mode. */
+html.light {
+  --bg: rgb(251, 251, 251);
+  --surface: #ffffff;
+  --surface-2: #f7f7f6;
+  --surface-hover: #f0efed;
+  --border: #e7e5e1;
+  --border-strong: #d0cdc6;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --text-faint: #9a9a98;
+  --accent: oklch(0.55 0.18 290);
+  --accent-soft: oklch(0.55 0.18 290 / 0.10);
+
+  --release: oklch(0.55 0.18 290);
+  --release-soft: oklch(0.55 0.18 290 / 0.12);
+  --news: oklch(0.55 0.13 70);
+  --news-soft: oklch(0.55 0.13 70 / 0.12);
+  --post: oklch(0.55 0.14 220);
+  --post-soft: oklch(0.55 0.14 220 / 0.12);
+
+  --agent-claude: oklch(0.62 0.11 45);
+  --agent-claude-soft: oklch(0.62 0.11 45 / 0.12);
+  --agent-cursor: oklch(0.30 0.01 250);
+  --agent-cursor-soft: oklch(0.30 0.01 250 / 0.10);
+  --agent-codex: oklch(0.55 0.13 165);
+  --agent-codex-soft: oklch(0.55 0.13 165 / 0.12);
+}
+
 html, body {
   background: var(--bg);
   color: var(--text);
@@ -113,3 +115,37 @@ a { color: inherit; }
 
 .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ---------- Embedded tweet (react-tweet) ---------- */
+/* react-tweet exposes its theme via custom properties. Match our tokens. */
+.embedded-tweet {
+  --tweet-container-margin: 0;
+  --tweet-font-family: var(--font-sans);
+  --tweet-bg-color: var(--surface-2);
+  --tweet-bg-color-hover: var(--surface-hover);
+  --tweet-color-blue-primary: var(--accent);
+  --tweet-color-blue-primary-hover: var(--accent);
+  --tweet-color-red-primary: oklch(0.65 0.20 25);
+  --tweet-border: 1px solid var(--border);
+  --tweet-border-radius: var(--r-md, 10px);
+  --tweet-color-text-primary: var(--text);
+  --tweet-color-text-secondary: var(--text-muted);
+}
+
+/* Compact mode for the lead drop. Caps width and tightens internal spacing
+   so the tweet sits below the headline as a quote, not as a competing block. */
+.embedded-tweet--compact { font-size: 13px; line-height: 1.45; }
+.embedded-tweet--compact [data-tweet-container] { padding: 12px 14px; }
+.embedded-tweet--compact [data-tweet-header] { gap: 8px; margin-bottom: 6px; }
+.embedded-tweet--compact [data-tweet-header] img,
+.embedded-tweet--compact [data-tweet-header] svg { width: 28px !important; height: 28px !important; }
+.embedded-tweet--compact [data-tweet-body] {
+  font-size: 13px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.embedded-tweet--compact [data-tweet-actions] { display: none; }
+.embedded-tweet--compact [data-tweet-info] { font-size: 11px; margin-top: 6px; }

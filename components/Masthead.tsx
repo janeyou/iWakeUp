@@ -41,20 +41,20 @@ export function Masthead({ recentCount, toolsLive, toolsTotal, lastIngestedAt }:
         )}
       </div>
 
-      <h1 className="font-[family-name:var(--font-display)] text-[clamp(40px,6vw,76px)] leading-[0.98] tracking-[-0.025em] text-[var(--color-text)]">
+      <h1 className="font-[family-name:var(--font-display)] font-bold text-[clamp(40px,6vw,76px)] leading-[0.98] tracking-[-0.025em] text-[var(--color-text)]">
         i wake up,
         <br />
-        there is another <em className="text-[var(--color-accent)]">AI update</em>.
+        there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
       </h1>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1.4fr_1fr] items-end">
-        <p className="font-[family-name:var(--font-display)] italic text-xl leading-snug text-[var(--color-text-muted)] max-w-[28ch]">
+        <p className="text-xl leading-snug text-[var(--color-text-muted)] max-w-[28ch]">
           A daily public tracker of what the AI agents shipped while you slept. Updated every morning at 5am PT.
         </p>
         <div className="grid grid-cols-3 border-y border-[var(--color-border)]">
           <Stat label="Tools tracked" value={`${toolsLive}`} suffix={` / ${toolsTotal}`} />
           <Stat label="Drops, last 24h" value={`${recentCount}`} />
-          <Stat label="Last ingest" value={stamp ? stamp.split(",")[1].trim() : "—"} />
+          <Stat label="Last ingest" value={stamp ? stamp.split(",")[1].trim() : "-"} />
         </div>
       </div>
     </header>
@@ -65,7 +65,7 @@ function Stat({ label, value, suffix }: { label: string; value: string; suffix?:
   return (
     <div className="border-r border-[var(--color-border)] last:border-r-0 px-4 py-3">
       <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">{label}</div>
-      <div className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--color-text)] leading-none">
+      <div className="mt-1 font-[family-name:var(--font-display)] font-bold text-2xl text-[var(--color-text)] leading-none tracking-[-0.02em]">
         {value}
         {suffix && <span className="text-sm text-[var(--color-text-faint)] ml-1">{suffix}</span>}
       </div>

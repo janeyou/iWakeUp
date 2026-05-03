@@ -45,7 +45,7 @@ export default async function HomePage() {
       />
 
       <section className="mx-auto max-w-6xl px-8 sm:px-12 py-14">
-        <SectionHead kicker="Lead drop" title="Today's wake-up" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
+        <SectionHead kicker="Lead drop" title="Today's AI Drop" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
         <TodayPanel entries={recent} />
       </section>
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-8 sm:px-12 grid gap-12 md:grid-cols-2">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">Stay in the loop</p>
-            <h3 className="mt-2 font-[family-name:var(--font-display)] italic text-3xl tracking-tight">
+            <h3 className="mt-2 font-[family-name:var(--font-display)] font-bold text-3xl tracking-[-0.02em]">
               One email a week, with the highlights.
             </h3>
             <p className="mt-3 max-w-prose text-[var(--color-text-muted)]">
@@ -89,7 +89,7 @@ export default async function HomePage() {
           </div>
           <div>
             <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">Missing a tool?</p>
-            <h3 className="mt-2 font-[family-name:var(--font-display)] italic text-3xl tracking-tight">
+            <h3 className="mt-2 font-[family-name:var(--font-display)] font-bold text-3xl tracking-[-0.02em]">
               Suggest something we should track.
             </h3>
             <p className="mt-3 max-w-prose text-[var(--color-text-muted)]">
@@ -128,7 +128,7 @@ function SectionHead({ kicker, title, right }: { kicker: string; title: string; 
     <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)]">{kicker}</p>
-        <h2 className="mt-1 font-[family-name:var(--font-display)] italic text-3xl tracking-tight text-[var(--color-text)]">
+        <h2 className="mt-1 font-[family-name:var(--font-display)] font-bold text-3xl tracking-[-0.02em] text-[var(--color-text)]">
           {title}
         </h2>
       </div>

@@ -1,32 +1,48 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { TopNav } from "@/components/TopNav";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "AI Radar, what AI agents shipped overnight",
+  title: "AI Radar, i wake up, there is another AI update",
   description:
-    "A live timeline of releases, changelog drops, and announcements from the AI agents you actually use. Updated daily at 5am PT. I wake up, there is another AI update.",
-  keywords: ["AI Radar", "AI agents", "Claude", "Cursor", "agentic AI", "release tracker", "iWakeUp"],
+    "A daily public tracker of what the AI agents shipped while you slept. Updated every morning at 5am PT.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+    // Dark by default. The theme toggle adds `light` to flip; nothing else opts in.
+    // suppressHydrationWarning silences next-themes' first-paint class diff.
+    <html
+      lang="en"
+      className={`dark ${inter.variable} ${mono.variable} ${display.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="font-sans antialiased">
+        <ThemeProvider>
+          <TopNav />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
