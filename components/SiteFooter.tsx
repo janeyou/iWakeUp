@@ -10,11 +10,14 @@ export function SiteFooter() {
             href="https://www.janeyoubradley.com/"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-[var(--color-text)]"
+            className="text-[var(--color-accent)] hover:text-[var(--color-text)]"
           >
             Jane You Bradley
           </a>
-          {" "}with Claude Code &amp; Design. Maintained by RaeyaBot. Daily ingest 5am PT.
+          {" "}with Claude Code &amp; Design. Maintained by RaeyaBot. Daily ingest 5am PT.{" "}
+          <span className="rounded border border-[var(--color-border-strong)] px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+            Beta
+          </span>
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-2">
           <a href="https://x.com/janeyoubradley" target="_blank" rel="noreferrer" className="hover:text-[var(--color-text)]">

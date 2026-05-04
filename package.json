@@ -14,6 +14,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@react-email/components": "^1.0.12",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/postgres": "^0.10.0",
     "cheerio": "^1.2.0",
     "geist": "^1.7.0",

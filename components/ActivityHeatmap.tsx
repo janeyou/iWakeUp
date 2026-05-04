@@ -15,8 +15,10 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
   const aggregated = single
     ? aggregateSingle(props.data, (props as SingleProps).agentSlug)
     : aggregateGlobal(props.data);
-  const streak = computeStreak(aggregated);
-  const busy = busiestDay(aggregated);
+  const dropsWeek = sumOverDays(aggregated, 7);
+  const secondCallout = single
+    ? { label: "Drops this month", value: `${sumOverDays(aggregated, 30)}`, unit: "" }
+    : mostActiveToolThisWeek(props.data as AgentDayActivity[]);
 
   return (
     <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
@@ -24,12 +26,12 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
         <div>
           <h3 className="font-[family-name:var(--font-display)] font-normal text-xl tracking-[-0.02em]">Activity, last 6 months</h3>
           <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-[var(--color-text-faint)]">
-            {single ? "by entry type" : "by agent · daily"}
+            {single ? "by entry type" : "by tool · daily"}
           </div>
         </div>
         <div className="flex gap-6">
-          <Callout label="Current streak" value={`${streak}`} unit="days" />
-          <Callout label="Busiest day" value={busy.value} unit={busy.unit} />
+          <Callout label="Drops this week" value={`${dropsWeek}`} unit="" />
+          <Callout label={secondCallout.label} value={secondCallout.value} unit={secondCallout.unit} />
         </div>
       </div>
 
@@ -160,25 +162,34 @@ function buildMonthLabels(cells: (null | { date: string })[]): string[] {
   return out;
 }
 
-function computeStreak(map: Map<string, DayInfo>): number {
-  let n = 0;
-  const today = new Date();
-  while (true) {
-    const k = today.toISOString().slice(0, 10);
-    const day = map.get(k);
-    if (!day || day.total === 0) break;
-    n++;
-    today.setDate(today.getDate() - 1);
+function sumOverDays(map: Map<string, DayInfo>, days: number): number {
+  let total = 0;
+  const cursor = new Date();
+  for (let i = 0; i < days; i++) {
+    const k = cursor.toISOString().slice(0, 10);
+    total += map.get(k)?.total ?? 0;
+    cursor.setDate(cursor.getDate() - 1);
   }
-  return n;
+  return total;
 }
 
-function busiestDay(map: Map<string, DayInfo>): { value: string; unit: string } {
-  let best = { date: "", total: -1 };
-  for (const [d, v] of map) if (v.total > best.total) best = { date: d, total: v.total };
-  if (!best.date) return { value: ",", unit: "" };
-  const dt = new Date(best.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return { value: `${best.total}`, unit: `on ${dt}` };
+function mostActiveToolThisWeek(rows: AgentDayActivity[]): { label: string; value: string; unit: string } {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 6);
+  const cutoffISO = cutoff.toISOString().slice(0, 10);
+  const totals = new Map<string, number>();
+  for (const r of rows) {
+    if (r.date < cutoffISO) continue;
+    totals.set(r.agent_slug, (totals.get(r.agent_slug) ?? 0) + r.count);
+  }
+  let bestSlug = ""; let best = 0;
+  for (const [s, n] of totals) if (n > best) { best = n; bestSlug = s; }
+  if (!bestSlug) return { label: "Most active tool this week", value: "—", unit: "" };
+  return {
+    label: "Most active tool this week",
+    value: getAgentBySlug(bestSlug)?.name ?? bestSlug,
+    unit: `· ${best}`,
+  };
 }
 
 function IntensityLegend({ slug }: { slug: string }) {

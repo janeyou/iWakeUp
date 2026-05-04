@@ -16,8 +16,8 @@ export function TodayPanel({ entries }: { entries: EntryRow[] }) {
   }
 
   const lead = entries[0];
-  const stack = entries.slice(1, 4);
-  const hidden = Math.max(0, entries.length - 4);
+  const stack = entries.slice(1, 5);
+  const hidden = Math.max(0, entries.length - 5);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">

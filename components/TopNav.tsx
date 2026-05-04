@@ -20,7 +20,7 @@ export function TopNav() {
             Drops
           </Link>
           <Link href="/agents" className="hover:text-[var(--color-text)]">
-            Agents
+            Tools
           </Link>
           <Link href="/learn" className="hover:text-[var(--color-text)]">
             Landscape
