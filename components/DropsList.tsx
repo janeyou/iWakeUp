@@ -214,7 +214,7 @@ function ExpandedDay({ items }: { items: EntryRow[] }) {
   // -mx-6 lets the queue scroll across main's full width, cancelling the
   // px-6 padding of <main> so cards reach both edges of the content area.
   return (
-    <div className="-mx-6 flex gap-4 overflow-x-auto pb-3">
+    <div className="scrollbar-thin -mx-6 flex gap-4 overflow-x-auto pb-3">
       {items.map((entry) => (
         <EntryCard key={entry.id} entry={entry} />
       ))}

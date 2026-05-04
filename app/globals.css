@@ -185,13 +185,13 @@ a { color: inherit; }
 .embedded-tweet--compact [data-tweet-actions] { display: none; }
 .embedded-tweet--compact [data-tweet-info] { font-size: 11px; margin-top: 6px; }
 
-/* Card mode: roughly half the natural height. Used by /agents/<slug>
-   horizontal queue. Wider than --compact, body clamped to 4 lines, time
-   row hidden so the card stops at the body. */
+/* Card mode: tight, ~12px body, capped at 360px so the queue stays
+   skimmable. Used by /agents/<slug> horizontal queue. Time/info row
+   hidden so the card stops at the body. */
 .embedded-tweet--card {
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.45;
-  max-height: 240px;
+  max-height: 360px;
   overflow: hidden;
   border-radius: 10px;
   position: relative;
@@ -204,17 +204,30 @@ a { color: inherit; }
   pointer-events: none;
   background: linear-gradient(to bottom, transparent, var(--surface));
 }
-.embedded-tweet--card [data-tweet-container] { padding: 14px 16px; }
-.embedded-tweet--card [data-tweet-header] { gap: 8px; margin-bottom: 8px; }
+.embedded-tweet--card [data-tweet-container] { padding: 12px 14px; }
+.embedded-tweet--card [data-tweet-header] { gap: 8px; margin-bottom: 6px; }
 .embedded-tweet--card [data-tweet-header] img,
-.embedded-tweet--card [data-tweet-header] svg { width: 32px !important; height: 32px !important; }
+.embedded-tweet--card [data-tweet-header] svg { width: 28px !important; height: 28px !important; }
 .embedded-tweet--card [data-tweet-body] {
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 8;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .embedded-tweet--card [data-tweet-actions] { display: none; }
 .embedded-tweet--card [data-tweet-info] { display: none; }
+
+/* Thin styled scrollbar for the per-tool horizontal card queue. */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
