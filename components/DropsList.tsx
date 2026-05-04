@@ -192,12 +192,12 @@ function CompactEntry({
         href={entry.source_url}
         target="_blank"
         rel="noreferrer"
-        className="block group"
+        className="block group/entry"
       >
         <div className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
           {meta}
         </div>
-        <h3 className="mt-1 text-base font-medium text-[var(--color-text)] group-hover:text-[var(--color-accent)]">
+        <h3 className="mt-1 text-base font-medium text-[var(--color-text)] group-hover/entry:text-[var(--color-accent)]">
           {entry.title}
         </h3>
         {entry.summary && (
@@ -211,8 +211,9 @@ function CompactEntry({
 }
 
 function ExpandedDay({ items }: { items: EntryRow[] }) {
+  // -mr-6 lets the queue scroll past main's px-6 to the page edge.
   return (
-    <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-3">
+    <div className="-mr-6 flex gap-4 overflow-x-auto pb-3">
       {items.map((entry) => (
         <EntryCard key={entry.id} entry={entry} />
       ))}
@@ -221,37 +222,63 @@ function ExpandedDay({ items }: { items: EntryRow[] }) {
 }
 
 function EntryCard({ entry }: { entry: EntryRow }) {
+  const isTweet = entry.source_type === "x" && !!entry.tweet_id;
+  return isTweet ? <TweetCard entry={entry} /> : <ContentCard entry={entry} />;
+}
+
+function TweetCard({ entry }: { entry: EntryRow }) {
+  // X embed renders its own header (handle, time, link). Card just frames it.
+  return (
+    <article className="w-[400px] shrink-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-accent)]">
+      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} />}
+    </article>
+  );
+}
+
+function ContentCard({ entry }: { entry: EntryRow }) {
   const slug = entry.agent_slug;
   const agent = getAgentBySlug(slug);
   const time = formatTimePT(entry.published_at);
-  const isTweet = entry.source_type === "x" && !!entry.tweet_id;
   return (
     <article className="flex w-[320px] shrink-0 flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition hover:border-[var(--color-accent)]">
       <div className="flex items-baseline justify-between gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
         <span>{agent?.name ?? slug}</span>
         {time && <span>{time}</span>}
       </div>
-      <h3 className="text-base font-medium leading-snug text-[var(--color-text)]">
-        <a
-          href={entry.source_url}
-          target="_blank"
-          rel="noreferrer"
-          className="hover:text-[var(--color-accent)]"
-        >
+      <a
+        href={entry.source_url}
+        target="_blank"
+        rel="noreferrer"
+        className="group/card flex items-baseline gap-1.5"
+      >
+        <h3 className="text-base font-medium leading-snug text-[var(--color-text)] group-hover/card:text-[var(--color-accent)]">
           {entry.title}
-        </a>
-      </h3>
+        </h3>
+        <ExternalIcon />
+      </a>
       {entry.summary && (
-        <p className="line-clamp-3 text-sm leading-snug text-[var(--color-text-muted)]">
+        <p className="line-clamp-4 text-sm leading-snug text-[var(--color-text-muted)]">
           {entry.summary}
         </p>
       )}
-      {isTweet && entry.tweet_id && (
-        <div className="mt-auto pt-1">
-          <EmbeddedTweet id={entry.tweet_id} compact />
-        </div>
-      )}
     </article>
+  );
+}
+
+function ExternalIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      className="shrink-0 text-[var(--color-text-faint)] transition group-hover/card:text-[var(--color-accent)]"
+      aria-hidden
+    >
+      <path d="M5 11L11 5M11 5H6.5M11 5v4.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
