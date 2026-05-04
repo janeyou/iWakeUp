@@ -6,17 +6,24 @@ export function TimelineEntry({
   entry,
   agentName,
   compact = false,
+  tinted = false,
 }: {
   entry: EntryRow;
   agentName?: string;
   /** Suppress embed + video, clamp summary. Used for /drops compact view. */
   compact?: boolean;
+  /** Use per-tool brand colors for rail and label. Off everywhere except /drops. */
+  tinted?: boolean;
 }) {
   const time = formatTimeIfMeaningful(entry.published_at);
   const slug = entry.agent_slug;
   const resolvedAgent = agentName ?? getAgentBySlug(slug)?.name ?? slug;
-  const railColor = `var(--color-agent-${slug}, var(--color-border))`;
-  const labelColor = `var(--color-agent-${slug}, var(--color-text-muted))`;
+  const railColor = tinted
+    ? `var(--color-agent-${slug}, var(--color-border))`
+    : "var(--color-border)";
+  const labelColor = tinted
+    ? `var(--color-agent-${slug}, var(--color-text-muted))`
+    : "var(--color-text-muted)";
 
   return (
     <article className="border-l-2 pl-4 pb-3" style={{ borderColor: railColor }}>
@@ -28,16 +35,13 @@ export function TimelineEntry({
           >
             {resolvedAgent}
           </span>
-          <span className="text-sm font-medium text-[var(--color-text)]">{entry.title}</span>
           <a
             href={entry.source_url}
             target="_blank"
             rel="noreferrer"
-            aria-label="Open source"
-            title="Open source"
-            className="inline-flex h-4 w-4 items-center justify-center text-[var(--color-text-faint)] transition hover:text-[var(--color-accent)]"
+            className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]"
           >
-            <ExternalIcon />
+            {entry.title}
           </a>
         </div>
         {time && (
@@ -74,14 +78,6 @@ export function TimelineEntry({
         </div>
       )}
     </article>
-  );
-}
-
-function ExternalIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
-      <path d="M5 11L11 5M11 5H6.5M11 5v4.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 

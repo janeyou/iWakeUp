@@ -46,12 +46,12 @@ function Lead({ entry }: { entry: EntryRow }) {
       rel="noreferrer"
       className="group relative isolate flex flex-col gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-7 transition hover:border-[var(--color-border-strong)]"
       style={{
-        // top-edge agent-tinted glow
-        backgroundImage: `linear-gradient(180deg, var(--color-agent-${slug}-soft, transparent) 0%, transparent 35%)`,
+        // top-edge accent glow
+        backgroundImage: `linear-gradient(180deg, var(--color-accent-soft) 0%, transparent 35%)`,
       }}
     >
       <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-wider">
-        <span className="font-medium" style={{ color: `var(--color-agent-${slug}, var(--color-text))` }}>
+        <span className="font-medium text-[var(--color-accent)]">
           {agent?.name ?? slug}
         </span>
         <span className="ml-auto text-[var(--color-text-faint)]">{relTime(entry.published_at)}</span>
@@ -88,14 +88,13 @@ function DropRow({ entry }: { entry: EntryRow }) {
       className="grid grid-cols-[auto_1fr_auto] items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-hover)]"
     >
       <span
-        className="mt-1.5 inline-block h-2 w-2 rounded-full"
-        style={{ background: `var(--color-agent-${slug}, var(--color-text-faint))` }}
+        className="mt-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-accent)]"
         aria-hidden
       />
       <div>
         <div className="line-clamp-2 text-sm leading-snug text-[var(--color-text)]">{entry.title}</div>
         <div className="mt-1 flex gap-2 font-mono text-[10.5px] uppercase tracking-wide text-[var(--color-text-faint)]">
-          <span className="font-medium" style={{ color: `var(--color-agent-${slug}, var(--color-text-muted))` }}>
+          <span className="font-medium text-[var(--color-accent)]">
             {agent?.name ?? slug}
           </span>
           <span>·</span>

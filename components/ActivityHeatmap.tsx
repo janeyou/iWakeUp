@@ -5,16 +5,17 @@ const WEEKS = 26;
 const DAYS = WEEKS * 7;
 const CELL = 13;
 
-type SingleProps = { mode?: "single"; agentSlug: string; data: ActivityDay[]; selectedDate?: string };
-type GlobalProps = { mode: "global"; data: AgentDayActivity[]; agentSlugs: string[]; selectedDate?: string };
+type SingleProps = { mode?: "single"; agentSlug: string; data: ActivityDay[]; selectedDate?: string; tintByTool?: boolean };
+type GlobalProps = { mode: "global"; data: AgentDayActivity[]; agentSlugs: string[]; selectedDate?: string; tintByTool?: boolean };
 
 export function ActivityHeatmap(props: SingleProps | GlobalProps) {
+  const tintByTool = props.tintByTool ?? false;
   const cells = buildCells();
   const monthLabels = buildMonthLabels(cells);
   const single = props.mode !== "global";
   const aggregated = single
-    ? aggregateSingle(props.data, (props as SingleProps).agentSlug)
-    : aggregateGlobal(props.data);
+    ? aggregateSingle(props.data, (props as SingleProps).agentSlug, tintByTool)
+    : aggregateGlobal(props.data, tintByTool);
   const dropsWeek = sumOverDays(aggregated, 7);
   const secondCallout = single
     ? { label: "Drops this month", value: `${sumOverDays(aggregated, 30)}`, unit: "" }
@@ -73,7 +74,11 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3 font-mono text-[10px] text-[var(--color-text-faint)]">
-        {single ? <IntensityLegend slug={(props as SingleProps).agentSlug} /> : <AgentLegend slugs={(props as GlobalProps).agentSlugs} />}
+        {single ? (
+          <IntensityLegend slug={(props as SingleProps).agentSlug} tintByTool={tintByTool} />
+        ) : (
+          <AgentLegend slugs={(props as GlobalProps).agentSlugs} tintByTool={tintByTool} />
+        )}
       </div>
     </section>
   );
@@ -92,16 +97,18 @@ function Callout({ label, value, unit }: { label: string; value: string; unit?: 
 
 type DayInfo = { total: number; hue: string; byAgent?: Record<string, number> };
 
-function aggregateSingle(rows: ActivityDay[], slug: string): Map<string, DayInfo> {
+function aggregateSingle(rows: ActivityDay[], slug: string, tintByTool: boolean): Map<string, DayInfo> {
   const map = new Map<string, DayInfo>();
-  const hue = `var(--color-agent-${slug}, var(--color-accent))`;
+  const hue = tintByTool
+    ? `var(--color-agent-${slug}, var(--color-accent))`
+    : "var(--color-accent)";
   for (const r of rows) {
     map.set(r.date, { total: r.total, hue });
   }
   return map;
 }
 
-function aggregateGlobal(rows: AgentDayActivity[]): Map<string, DayInfo> {
+function aggregateGlobal(rows: AgentDayActivity[], tintByTool: boolean): Map<string, DayInfo> {
   const tmp = new Map<string, { total: number; byAgent: Record<string, number> }>();
   for (const r of rows) {
     let b = tmp.get(r.date);
@@ -113,7 +120,10 @@ function aggregateGlobal(rows: AgentDayActivity[]): Map<string, DayInfo> {
   for (const [d, b] of tmp) {
     let dom = ""; let max = -1;
     for (const [s, c] of Object.entries(b.byAgent)) if (c > max) { max = c; dom = s; }
-    out.set(d, { total: b.total, hue: `var(--color-agent-${dom}, var(--color-accent))`, byAgent: b.byAgent });
+    const hue = tintByTool
+      ? `var(--color-agent-${dom}, var(--color-accent))`
+      : "var(--color-accent)";
+    out.set(d, { total: b.total, hue, byAgent: b.byAgent });
   }
   return out;
 }
@@ -198,13 +208,16 @@ function mostActiveToolThisWeek(rows: AgentDayActivity[]): { label: string; valu
   };
 }
 
-function IntensityLegend({ slug }: { slug: string }) {
+function IntensityLegend({ slug, tintByTool }: { slug: string; tintByTool: boolean }) {
+  const base = tintByTool
+    ? `var(--color-agent-${slug}, var(--color-accent))`
+    : "var(--color-accent)";
   return (
     <>
       <span>Less</span>
       {[0.15, 0.35, 0.55, 0.78, 1].map((v) => (
         <span key={v} className="inline-block h-[10px] w-[10px] rounded-[2px]" style={{
-          background: `color-mix(in oklch, var(--color-agent-${slug}, var(--color-accent)) ${Math.round(v * 100)}%, var(--color-surface))`,
+          background: `color-mix(in oklch, ${base} ${Math.round(v * 100)}%, var(--color-surface))`,
         }} />
       ))}
       <span>More</span>
@@ -212,15 +225,20 @@ function IntensityLegend({ slug }: { slug: string }) {
   );
 }
 
-function AgentLegend({ slugs }: { slugs: string[] }) {
+function AgentLegend({ slugs, tintByTool }: { slugs: string[]; tintByTool: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-4">
-      {slugs.map((s) => (
-        <span key={s} className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-[9px] w-[9px] rounded-[2px]" style={{ background: `var(--color-agent-${s}, var(--color-accent))` }} />
-          {getAgentBySlug(s)?.name ?? s}
-        </span>
-      ))}
+      {slugs.map((s) => {
+        const swatch = tintByTool
+          ? `var(--color-agent-${s}, var(--color-accent))`
+          : "var(--color-accent)";
+        return (
+          <span key={s} className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-[9px] w-[9px] rounded-[2px]" style={{ background: swatch }} />
+            {getAgentBySlug(s)?.name ?? s}
+          </span>
+        );
+      })}
     </div>
   );
 }

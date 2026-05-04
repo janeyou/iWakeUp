@@ -13,17 +13,16 @@ export type DropsDay = {
 
 type Props = {
   groups: DropsDay[];
-  todayPT: string;
-  dateOnly?: string;
 };
 
 type View = "compact" | "expanded";
 
-export function DropsList({ groups, todayPT, dateOnly }: Props) {
+const PAGE = 5;
+
+export function DropsList({ groups }: Props) {
   const [view, setView] = useState<View>("expanded");
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
-    initialOpenMap(groups, todayPT, dateOnly),
-  );
+  const [visibleCount, setVisibleCount] = useState(() => Math.min(PAGE, groups.length));
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => allOpenForFirstN(groups, PAGE));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -31,9 +30,11 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
     if (saved === "compact" || saved === "expanded") setView(saved);
   }, []);
 
+  // Reset on prop change (filters / pagination / date).
   useEffect(() => {
-    setOpenMap(initialOpenMap(groups, todayPT, dateOnly));
-  }, [groups, todayPT, dateOnly]);
+    setVisibleCount(Math.min(PAGE, groups.length));
+    setOpenMap(allOpenForFirstN(groups, PAGE));
+  }, [groups]);
 
   function toggleView() {
     setView((prev) => {
@@ -43,14 +44,22 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
     });
   }
 
-  function setAll(val: boolean) {
-    const next: Record<string, boolean> = {};
-    for (const g of groups) next[g.iso] = val;
-    setOpenMap(next);
+  function showMore() {
+    setVisibleCount((prev) => {
+      const next = Math.min(prev + PAGE, groups.length);
+      // Auto-open the newly revealed groups too.
+      setOpenMap((m) => {
+        const out = { ...m };
+        for (let i = prev; i < next; i++) out[groups[i].iso] = true;
+        return out;
+      });
+      return next;
+    });
   }
 
-  // Button label shows the *next* state, not the current one.
   const toggleLabel = view === "compact" ? "Expanded view" : "Compact view";
+  const visibleGroups = groups.slice(0, visibleCount);
+  const remaining = groups.length - visibleCount;
 
   return (
     <>
@@ -63,29 +72,10 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
         >
           {toggleLabel}
         </button>
-        {!dateOnly && groups.length > 0 && (
-          <div className="ml-auto flex gap-2 font-mono text-[11px] uppercase tracking-wider">
-            <button
-              type="button"
-              onClick={() => setAll(true)}
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
-            >
-              Expand all
-            </button>
-            <span className="text-[var(--color-border-strong)]">/</span>
-            <button
-              type="button"
-              onClick={() => setAll(false)}
-              className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
-            >
-              Collapse all
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">
-        {groups.map(({ iso, displayDate, items }) => {
+        {visibleGroups.map(({ iso, displayDate, items }) => {
           const agentNames = uniqueAgentNames(items);
           const open = openMap[iso] ?? false;
           return (
@@ -114,28 +104,87 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
                 </span>
               </summary>
               <div className="pt-2 pb-2">
-                {items.map((entry) => (
-                  <TimelineEntry key={entry.id} entry={entry} compact={view === "compact"} />
-                ))}
+                {view === "compact" ? (
+                  <CompactDay items={items} />
+                ) : (
+                  items.map((entry) => (
+                    <TimelineEntry key={entry.id} entry={entry} tinted />
+                  ))
+                )}
               </div>
             </details>
           );
         })}
       </div>
+
+      {remaining > 0 && (
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={showMore}
+            className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+          >
+            Show {Math.min(PAGE, remaining)} more {remaining === 1 ? "date" : "dates"} →
+          </button>
+        </div>
+      )}
     </>
   );
 }
 
-function initialOpenMap(
-  groups: DropsDay[],
-  todayPT: string,
-  dateOnly: string | undefined,
-): Record<string, boolean> {
+function CompactDay({ items }: { items: EntryRow[] }) {
+  return (
+    <ol className="relative ml-2 mt-2">
+      <span
+        aria-hidden
+        className="absolute left-[5px] top-1.5 bottom-1.5 w-px bg-[var(--color-border)]"
+      />
+      {items.map((entry, i) => (
+        <CompactEntry key={entry.id} entry={entry} last={i === items.length - 1} />
+      ))}
+    </ol>
+  );
+}
+
+function CompactEntry({ entry, last }: { entry: EntryRow; last: boolean }) {
+  const slug = entry.agent_slug;
+  const agent = getAgentBySlug(slug);
+  const time = formatTimePT(entry.published_at);
+  const dotColor = `var(--color-agent-${slug}, var(--color-accent))`;
+  const meta = time ? `${agent?.name ?? slug} · ${time}` : (agent?.name ?? slug);
+  return (
+    <li className={["relative pl-7", last ? "pb-1" : "pb-7"].join(" ")}>
+      <span
+        aria-hidden
+        className="absolute left-0 top-1.5 inline-block h-[11px] w-[11px] rounded-full ring-4 ring-[var(--color-bg)]"
+        style={{ background: dotColor }}
+      />
+      <a
+        href={entry.source_url}
+        target="_blank"
+        rel="noreferrer"
+        className="block group"
+      >
+        <div className="font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
+          {meta}
+        </div>
+        <h3 className="mt-1 text-base font-medium text-[var(--color-text)] group-hover:text-[var(--color-accent)]">
+          {entry.title}
+        </h3>
+        {entry.summary && (
+          <p className="mt-2 text-sm leading-snug text-[var(--color-text-muted)]">
+            {entry.summary}
+          </p>
+        )}
+      </a>
+    </li>
+  );
+}
+
+function allOpenForFirstN(groups: DropsDay[], n: number): Record<string, boolean> {
   const out: Record<string, boolean> = {};
-  for (const g of groups) {
-    out[g.iso] = g.iso === todayPT || (dateOnly !== undefined && g.iso === dateOnly);
-  }
-  if (dateOnly && groups.length === 1) out[groups[0].iso] = true;
+  const lim = Math.min(n, groups.length);
+  for (let i = 0; i < lim; i++) out[groups[i].iso] = true;
   return out;
 }
 
@@ -147,4 +196,14 @@ function uniqueAgentNames(items: EntryRow[]): string[] {
     out.push(a?.name ?? slug);
   }
   return out.sort();
+}
+
+function formatTimePT(iso: string): string | null {
+  const t = new Date(iso).toLocaleTimeString("en-US", {
+    timeZone: "America/Los_Angeles",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return t === "00:00" ? null : `${t} PT`;
 }

@@ -55,7 +55,6 @@ export default async function DropsPage({
   const scopedAgentSlugs = agentSlug ? [agentSlug] : liveAgents.map((a) => a.slug);
 
   const groupedDays = groupByPTDate(entries);
-  const todayPT = todayPTISODate();
   const oldest = entries[entries.length - 1];
   const hasMore = !dateOnly && entries.length === PAGE_SIZE;
 
@@ -86,6 +85,7 @@ export default async function DropsPage({
           data={scopedActivity}
           agentSlugs={scopedAgentSlugs}
           selectedDate={dateOnly}
+          tintByTool
         />
       </div>
 
@@ -119,7 +119,7 @@ export default async function DropsPage({
           {dateOnly ? ` on ${dateOnly}` : ""}.
         </p>
       ) : (
-        <DropsList groups={groupedDays} todayPT={todayPT} dateOnly={dateOnly} />
+        <DropsList groups={groupedDays} />
       )}
 
       {hasMore && oldest && (
@@ -192,8 +192,3 @@ function groupByPTDate(entries: EntryRow[]): DayGroup[] {
   return Array.from(map.values());
 }
 
-function todayPTISODate(): string {
-  return new Date().toLocaleDateString("en-CA", {
-    timeZone: "America/Los_Angeles",
-  });
-}
