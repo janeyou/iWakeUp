@@ -23,12 +23,11 @@
   --color-post: var(--post);
   --color-post-soft: var(--post-soft);
 
-  --color-agent-claude: var(--agent-claude);
-  --color-agent-claude-soft: var(--agent-claude-soft);
-  --color-agent-cursor: var(--agent-cursor);
-  --color-agent-cursor-soft: var(--agent-cursor-soft);
-  --color-agent-codex: var(--agent-codex);
-  --color-agent-codex-soft: var(--agent-codex-soft);
+  /* NOTE: --color-agent-* aliases live in :root / html.dark, NOT @theme.
+     Tailwind v4's @theme tree-shakes tokens that no utility class references,
+     and these are only used via dynamic inline styles (var(--color-agent-${slug})),
+     which the tree-shaker can't see. Keeping them out of @theme guarantees
+     they survive. See :root and html.dark below. */
 
   /* Geist for everything. Geist Mono for time, dates, kickers, meta. */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -66,6 +65,13 @@
   --agent-cursor-soft: oklch(0.50 0.16 265 / 0.12);
   --agent-codex: oklch(0.55 0.13 160);
   --agent-codex-soft: oklch(0.55 0.13 160 / 0.12);
+
+  --color-agent-claude: var(--agent-claude);
+  --color-agent-claude-soft: var(--agent-claude-soft);
+  --color-agent-cursor: var(--agent-cursor);
+  --color-agent-cursor-soft: var(--agent-cursor-soft);
+  --color-agent-codex: var(--agent-codex);
+  --color-agent-codex-soft: var(--agent-codex-soft);
 }
 
 html.dark {
@@ -94,6 +100,13 @@ html.dark {
   --agent-cursor-soft: oklch(0.74 0.13 265 / 0.18);
   --agent-codex: oklch(0.72 0.13 160);
   --agent-codex-soft: oklch(0.72 0.13 160 / 0.18);
+
+  --color-agent-claude: var(--agent-claude);
+  --color-agent-claude-soft: var(--agent-claude-soft);
+  --color-agent-cursor: var(--agent-cursor);
+  --color-agent-cursor-soft: var(--agent-cursor-soft);
+  --color-agent-codex: var(--agent-codex);
+  --color-agent-codex-soft: var(--agent-codex-soft);
 }
 
 html, body {

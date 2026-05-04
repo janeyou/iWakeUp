@@ -85,6 +85,7 @@ export default async function DropsPage({
           mode="global"
           data={scopedActivity}
           agentSlugs={scopedAgentSlugs}
+          selectedDate={dateOnly}
         />
       </div>
 
@@ -103,8 +104,9 @@ export default async function DropsPage({
           </span>
           <Link
             href={agentSlug ? `/drops?agent=${agentSlug}` : "/drops"}
-            className="text-[var(--color-accent)] hover:underline"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-[var(--color-bg)]"
           >
+            <span aria-hidden className="text-base leading-none">×</span>
             Clear date
           </Link>
         </div>

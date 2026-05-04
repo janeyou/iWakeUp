@@ -5,8 +5,8 @@ const WEEKS = 26;
 const DAYS = WEEKS * 7;
 const CELL = 13;
 
-type SingleProps = { mode?: "single"; agentSlug: string; data: ActivityDay[] };
-type GlobalProps = { mode: "global"; data: AgentDayActivity[]; agentSlugs: string[] };
+type SingleProps = { mode?: "single"; agentSlug: string; data: ActivityDay[]; selectedDate?: string };
+type GlobalProps = { mode: "global"; data: AgentDayActivity[]; agentSlugs: string[]; selectedDate?: string };
 
 export function ActivityHeatmap(props: SingleProps | GlobalProps) {
   const cells = buildCells();
@@ -51,12 +51,18 @@ export function ActivityHeatmap(props: SingleProps | GlobalProps) {
                 const href = single
                   ? `/agents/${(props as SingleProps).agentSlug}?date=${cell.date}`
                   : `/drops?date=${cell.date}`;
+                const isSelected = props.selectedDate === cell.date;
                 return (
                   <a
                     key={cell.date}
                     href={href}
                     title={tooltipText(day, cell.date, single)}
-                    className="block rounded-[2px] hover:outline hover:outline-[1.5px] hover:outline-[var(--color-text)]"
+                    className={[
+                      "block rounded-[2px]",
+                      isSelected
+                        ? "outline outline-[2px] outline-offset-[2px] outline-[var(--color-accent)]"
+                        : "hover:outline hover:outline-[1.5px] hover:outline-[var(--color-text)]",
+                    ].join(" ")}
                     style={{ width: CELL, height: CELL, background: cellColor(day, single, single ? (props as SingleProps).agentSlug : undefined) }}
                   />
                 );

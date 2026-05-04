@@ -20,19 +20,17 @@ type Props = {
 type View = "compact" | "expanded";
 
 export function DropsList({ groups, todayPT, dateOnly }: Props) {
-  const [view, setView] = useState<View>("compact");
+  const [view, setView] = useState<View>("expanded");
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
     initialOpenMap(groups, todayPT, dateOnly),
   );
 
-  // Restore persisted view preference on mount.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = window.localStorage.getItem("drops:view");
     if (saved === "compact" || saved === "expanded") setView(saved);
   }, []);
 
-  // When the underlying group set changes (filters / pagination / ?date), reset open map.
   useEffect(() => {
     setOpenMap(initialOpenMap(groups, todayPT, dateOnly));
   }, [groups, todayPT, dateOnly]);
@@ -51,6 +49,9 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
     setOpenMap(next);
   }
 
+  // Button label shows the *next* state, not the current one.
+  const toggleLabel = view === "compact" ? "Expanded view" : "Compact view";
+
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -60,7 +61,7 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
           className="rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
           aria-label={`Switch to ${view === "compact" ? "expanded" : "compact"} view`}
         >
-          {view === "compact" ? "Compact" : "Expanded"} view
+          {toggleLabel}
         </button>
         {!dateOnly && groups.length > 0 && (
           <div className="ml-auto flex gap-2 font-mono text-[11px] uppercase tracking-wider">
@@ -113,56 +114,15 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
                 </span>
               </summary>
               <div className="pt-2 pb-2">
-                {view === "expanded"
-                  ? items.map((entry) => <TimelineEntry key={entry.id} entry={entry} />)
-                  : items.map((entry) => <CompactEntry key={entry.id} entry={entry} />)}
+                {items.map((entry) => (
+                  <TimelineEntry key={entry.id} entry={entry} compact={view === "compact"} />
+                ))}
               </div>
             </details>
           );
         })}
       </div>
     </>
-  );
-}
-
-function CompactEntry({ entry }: { entry: EntryRow }) {
-  const slug = entry.agent_slug;
-  const agent = getAgentBySlug(slug);
-  const time = formatTime(entry.published_at);
-  return (
-    <article
-      className="border-l-2 pl-4 pb-3"
-      style={{ borderColor: `var(--color-agent-${slug}, var(--color-border))` }}
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <span
-            className="font-mono text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: `var(--color-agent-${slug}, var(--color-text-muted))` }}
-          >
-            {agent?.name ?? slug}
-          </span>
-          <a
-            href={entry.source_url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-accent)]"
-          >
-            {entry.title}
-          </a>
-        </div>
-        {time && (
-          <span className="shrink-0 font-mono text-xs text-[var(--color-text-faint)]">
-            {time}
-          </span>
-        )}
-      </div>
-      {entry.summary && (
-        <p className="mt-1 line-clamp-2 text-sm leading-snug text-[var(--color-text-muted)]">
-          {entry.summary}
-        </p>
-      )}
-    </article>
   );
 }
 
@@ -175,7 +135,6 @@ function initialOpenMap(
   for (const g of groups) {
     out[g.iso] = g.iso === todayPT || (dateOnly !== undefined && g.iso === dateOnly);
   }
-  // If filtering to a single date and that date isn't in the open list yet (e.g., the only group in the result), make sure it opens.
   if (dateOnly && groups.length === 1) out[groups[0].iso] = true;
   return out;
 }
@@ -188,14 +147,4 @@ function uniqueAgentNames(items: EntryRow[]): string[] {
     out.push(a?.name ?? slug);
   }
   return out.sort();
-}
-
-function formatTime(iso: string): string | null {
-  const t = new Date(iso).toLocaleTimeString("en-US", {
-    timeZone: "America/Los_Angeles",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  return t === "00:00" ? null : `${t} PT`;
 }
