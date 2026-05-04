@@ -148,8 +148,12 @@ async function ingestSource(
     const cached = await getSourceState(source.url);
 
     if (source.type === "x") {
+      // X TTL is honored even on --force. The flag is intended to bypass the
+      // changelog/blog content-hash cache (so a parser change is re-run); it
+      // should not bypass the X 1h debounce, which exists purely to avoid
+      // hammering the X API rate limit during dev. The scheduled cron runs
+      // once a day and never trips this.
       if (
-        !opts.force &&
         cached &&
         Date.now() - new Date(cached.last_fetched_at).getTime() < X_TTL_MS
       ) {
