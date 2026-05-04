@@ -220,6 +220,7 @@ export async function fetchTweetsForHandle(
   opts: { sinceId?: string | null; xUserId?: string | null } = {}
 ): Promise<XApiResult<{ tweets: XTweet[]; strategy: string; xUserId?: string | null }>> {
   // Strategy 1: X API v2 (requires Basic tier as of 2024 for read endpoints)
+  let lastXError: string | null = null;
   if (process.env.X_BEARER_TOKEN) {
     let userId = opts.xUserId ?? null;
     if (!userId) {
@@ -229,17 +230,20 @@ export async function fetchTweetsForHandle(
       } else if (r.status !== 402 && r.status !== 403 && r.status !== 401) {
         // hard error, propagate (e.g. 404 for unknown handle)
         return { ok: false, status: r.status, error: `X resolveUserId ${r.status}: ${r.error.slice(0, 200)}` };
+      } else {
+        lastXError = `X resolveUserId ${r.status}: ${r.error.slice(0, 200)}`;
       }
-      // 401/402/403 = Free tier paywall, fall through to Nitter
+      // 401/402/403 = Free tier paywall or rate-limit, fall through to Nitter
     }
     if (userId) {
       const tl = await fetchTimeline(userId, handle, { sinceId: opts.sinceId ?? undefined });
       if (tl.ok) {
         return { ok: true, data: { tweets: tl.data, strategy: "x_api", xUserId: userId } };
       }
-      if (tl.status !== 402 && tl.status !== 403 && tl.status !== 401) {
+      if (tl.status !== 402 && tl.status !== 403 && tl.status !== 401 && tl.status !== 429) {
         return { ok: false, status: tl.status, error: `X fetchTimeline ${tl.status}: ${tl.error.slice(0, 200)}` };
       }
+      lastXError = `X fetchTimeline ${tl.status}: ${tl.error.slice(0, 200)}`;
     }
   }
 
@@ -248,5 +252,13 @@ export async function fetchTweetsForHandle(
   if (nitter.ok) {
     return { ok: true, data: { tweets: nitter.data, strategy: "nitter" } };
   }
-  return { ok: false, status: nitter.status, error: nitter.error };
+  // Surface the upstream X API error (429/403/etc.) when it caused the
+  // fallback. Without this, the operator-facing error reads "all RSS hosts
+  // failed" with no signal that X itself was rate-limited or paywalled.
+  const upstreamHint = lastXError ? ` (upstream: ${lastXError})` : "";
+  return {
+    ok: false,
+    status: nitter.status,
+    error: `${nitter.error}${upstreamHint}`,
+  };
 }
