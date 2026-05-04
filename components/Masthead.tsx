@@ -40,14 +40,9 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
         )}
       </div>
 
-      <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
-          i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
-        </h1>
-        <span className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
-          Beta
-        </span>
-      </div>
+      <h1 className="font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
+        i wake up, there is another <em className="italic text-[var(--color-accent)]">AI update</em>.
+      </h1>
       <div className="mt-4">
         <RadarCat />
       </div>

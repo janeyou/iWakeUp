@@ -91,9 +91,11 @@ export function DropsList({ groups, todayPT, dateOnly }: Props) {
             <details
               key={iso}
               open={open}
-              onToggle={(e) =>
-                setOpenMap((prev) => ({ ...prev, [iso]: e.currentTarget.open }))
-              }
+              onToggle={(e) => {
+                const next = (e.currentTarget as HTMLDetailsElement | null)?.open;
+                if (typeof next !== "boolean") return;
+                setOpenMap((prev) => (prev[iso] === next ? prev : { ...prev, [iso]: next }));
+              }}
               className="group border-t border-[var(--color-border)] [&_summary::-webkit-details-marker]:hidden"
             >
               <summary className="flex cursor-pointer items-baseline justify-between gap-3 py-3 list-none">
