@@ -5,7 +5,7 @@ export type AgentSource = {
   url: string;
   label: string;
   /** Named parser in lib/scrape.ts. Required for changelog/blog. X sources skip this. */
-  parser?: "claude-support" | "anthropic-news";
+  parser?: "claude-support" | "anthropic-news" | "cursor-changelog" | "openai-news";
 };
 
 export type Agent = {
@@ -50,6 +50,12 @@ export const AGENTS: Agent[] = [
     officialUrl: "https://cursor.com",
     blurb: "IDE-native coding agent.",
     sources: [
+      {
+        type: "changelog",
+        url: "https://cursor.com/changelog",
+        label: "Cursor changelog",
+        parser: "cursor-changelog",
+      },
       { type: "x", url: "https://x.com/cursor_ai", label: "@cursor_ai" },
     ],
   },
@@ -60,6 +66,21 @@ export const AGENTS: Agent[] = [
     officialUrl: "https://openai.com/codex",
     blurb: "OpenAI's coding agent in ChatGPT.",
     sources: [
+      // /news/ and /index/ serve the same content stream as of 2026-05-04;
+      // the same parser handles both. Listing both keeps us resilient if
+      // OpenAI splits them later.
+      {
+        type: "blog",
+        url: "https://openai.com/news/",
+        label: "OpenAI News",
+        parser: "openai-news",
+      },
+      {
+        type: "blog",
+        url: "https://openai.com/index/",
+        label: "OpenAI Research index",
+        parser: "openai-news",
+      },
       { type: "x", url: "https://x.com/OpenAI", label: "@OpenAI" },
       { type: "x", url: "https://x.com/OpenAIDevs", label: "@OpenAIDevs" },
       // Leadership account. The LLM x-quality filter (lib/xQuality.ts) keeps

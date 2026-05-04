@@ -25,6 +25,10 @@ export function parseSource(html: string, source: AgentSource): ParsedEntry[] {
       return parseClaudeSupport(html, source);
     case "anthropic-news":
       return parseAnthropicNews(html, source);
+    case "cursor-changelog":
+      return parseCursorChangelog(html, source);
+    case "openai-news":
+      return parseOpenAINews(html, source);
     default:
       throw new NoParserError(source.url);
   }
@@ -149,6 +153,122 @@ function parseAnthropicNews(html: string, source: AgentSource): ParsedEntry[] {
       entry_type: classifyText(title + " " + summary),
       tweet_id: null,
       video_url: videoUrl,
+      published_at: date.toISOString(),
+    });
+  });
+
+  return entries;
+}
+
+/**
+ * cursor.com/changelog — single-page index. Each release is wrapped in
+ * <article>, with <h1> title, <time datetime> date, the first non-time
+ * <p> as summary, and a permalink anchor `<a href="/changelog/<slug>">`.
+ */
+function parseCursorChangelog(html: string, _source: AgentSource): ParsedEntry[] {
+  const $ = cheerio.load(html);
+  const entries: ParsedEntry[] = [];
+  const seen = new Set<string>();
+
+  $("article").each((_, el) => {
+    const $art = $(el);
+    const $time = $art.find("time[datetime]").first();
+    const dt = $time.attr("datetime");
+    if (!dt) return;
+    const date = parseLooseDate(dt);
+    if (!date) return;
+
+    const title = $art.find("h1").first().text().trim();
+    if (!title) return;
+
+    const slugLink = $art.find('a[href^="/changelog/"]').first().attr("href");
+    const sourceUrl = slugLink
+      ? `https://cursor.com${slugLink}`
+      : `https://cursor.com/changelog`;
+
+    if (seen.has(sourceUrl)) return;
+    seen.add(sourceUrl);
+
+    // First <p> that doesn't contain the <time> element; that's the date row.
+    let summary = "";
+    $art
+      .find("p")
+      .each((_i, p) => {
+        if (summary) return;
+        const $p = $(p);
+        if ($p.find("time").length > 0) return;
+        const text = $p.text().replace(/\s+/g, " ").trim();
+        if (text) summary = text;
+      });
+
+    const videoUrl = detectVideo($art);
+
+    entries.push({
+      title: cleanText(title),
+      summary: cleanText(summary || title).slice(0, 500),
+      source_url: sourceUrl,
+      source_type: "changelog",
+      entry_type: classifyText(title + " " + summary),
+      tweet_id: null,
+      video_url: videoUrl,
+      published_at: date.toISOString(),
+    });
+  });
+
+  return entries;
+}
+
+/**
+ * openai.com/news/ and openai.com/index/ — same content stream. Each post
+ * is an <a href="/index/<slug>"> with an aria-label "<Title> - <Category> - <Date>".
+ * The visible title sits in a sibling div with a `text-h5` class; the date
+ * lives in <time datetime>. No excerpt on the index page, so summary is
+ * left empty (UI skips when blank).
+ */
+function parseOpenAINews(html: string, _source: AgentSource): ParsedEntry[] {
+  const $ = cheerio.load(html);
+  const entries: ParsedEntry[] = [];
+  const seen = new Set<string>();
+
+  $("time[datetime]").each((_, el) => {
+    const $time = $(el);
+    const dt = $time.attr("datetime");
+    if (!dt) return;
+    const date = parseLooseDate(dt);
+    if (!date) return;
+
+    const $a = $time.closest('a[href^="/index/"], a[href^="/news/"]');
+    if (!$a.length) return;
+    const href = $a.attr("href");
+    if (!href) return;
+
+    const sourceUrl = `https://openai.com${href.split("#")[0]}`;
+    if (seen.has(sourceUrl)) return;
+    seen.add(sourceUrl);
+
+    // Prefer the visible title node; fall back to aria-label, splitting off
+    // the trailing " - Category - Date" segments.
+    let title = $a.find('[class*="text-h5"]').first().text().replace(/\s+/g, " ").trim();
+    if (!title) {
+      const aria = $a.attr("aria-label") || "";
+      title = aria.split(" - ")[0].trim();
+    }
+    if (!title) return;
+
+    // Category from the meta-row span; use as a soft summary.
+    const $meta = $a.find("p.text-meta, p[class*='text-meta']").first();
+    const $catSpan = $meta.find("span").first();
+    const category = $catSpan.text().replace(/\s+/g, " ").trim();
+    const summary = category && !/^\s*$/.test(category) ? category : "";
+
+    entries.push({
+      title: cleanText(title),
+      summary: cleanText(summary),
+      source_url: sourceUrl,
+      source_type: "blog",
+      entry_type: classifyText(title + " " + summary),
+      tweet_id: null,
+      video_url: null,
       published_at: date.toISOString(),
     });
   });

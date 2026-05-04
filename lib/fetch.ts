@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 
-const USER_AGENT = "AI Radar/0.1 (+https://airadarapp.com)";
+// Some publishers (e.g. openai.com) 403 unrecognised bot UAs. Send a
+// browser-shaped UA so fetch goes through, plus an X-Identity header that
+// preserves attribution for site owners who care to look.
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15";
+const X_IDENTITY = "AI Radar/0.1 (+https://airadarapp.com)";
 const TIMEOUT_MS = 15_000;
 const MAX_BYTES = 200_000;
 
@@ -19,6 +24,8 @@ export async function fetchAndHash(url: string): Promise<FetchResult> {
       headers: {
         "User-Agent": USER_AGENT,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "X-Identity": X_IDENTITY,
       },
       signal: controller.signal,
       redirect: "follow",

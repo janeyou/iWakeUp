@@ -42,6 +42,9 @@ export type RunOptions = {
 };
 
 const X_TTL_MS = 60 * 60 * 1000;
+/** Hard ceiling on how far back any source's entries may be persisted.
+ *  Applied at persist time so X, blog, and changelog all share the cap. */
+export const RETENTION_DAYS = 90;
 
 export async function ingestAgent(
   agent: Agent,
@@ -63,6 +66,11 @@ export async function ingestAgent(
   const dedup = await dedupeChangelogVsBlog(agent.slug);
   if (dedup.deleted > 0) {
     console.log(`[ingest] ${agent.slug}: deduped ${dedup.deleted} changelog/blog overlap`);
+  }
+
+  const dedupX = await dedupeXVsOfficial(agent.slug);
+  if (dedupX.deleted > 0) {
+    console.log(`[ingest] ${agent.slug}: deduped ${dedupX.deleted} X-vs-official overlap`);
   }
 
   return { agent: agent.slug, totalInserted, sources: results };
@@ -120,6 +128,54 @@ export async function dedupeChangelogVsBlog(
   for (const r of rows) {
     if (jaccard(titleTokens(r.cl_title), titleTokens(r.bl_title)) >= threshold) {
       ids.push(r.cl_id);
+    }
+  }
+  if (ids.length === 0) return { deleted: 0 };
+
+  let deleted = 0;
+  for (const id of ids) {
+    const { rowCount } = await sql`DELETE FROM entries WHERE id = ${id}`;
+    deleted += rowCount ?? 0;
+  }
+  return { deleted };
+}
+
+/**
+ * When a tweet announces the same release as an official blog/changelog
+ * post on the same PT day, drop the X copy so the official entry wins.
+ * Matching: same agent, same PT date, both `release`, X-vs-official, and
+ * Jaccard token overlap on titles >= threshold. The X tweet's title is
+ * derived from the tweet text (often a leading line) so the overlap is
+ * usually high when the launch language matches.
+ */
+export async function dedupeXVsOfficial(
+  agentSlug: string,
+  threshold = 0.4
+): Promise<{ deleted: number }> {
+  const { rows } = await sql<{
+    x_id: number;
+    x_title: string;
+    off_title: string;
+  }>`
+    SELECT x.id AS x_id, x.title AS x_title, off.title AS off_title
+    FROM entries x
+    JOIN entries off
+      ON x.agent_slug = off.agent_slug
+     AND (x.published_at AT TIME ZONE 'America/Los_Angeles')::date
+       = (off.published_at AT TIME ZONE 'America/Los_Angeles')::date
+    WHERE x.agent_slug = ${agentSlug}
+      AND x.entry_type = 'release' AND off.entry_type = 'release'
+      AND x.source_type = 'x'
+      AND off.source_type IN ('blog', 'changelog')
+  `;
+
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  for (const r of rows) {
+    if (seen.has(r.x_id)) continue;
+    if (jaccard(titleTokens(r.x_title), titleTokens(r.off_title)) >= threshold) {
+      ids.push(r.x_id);
+      seen.add(r.x_id);
     }
   }
   if (ids.length === 0) return { deleted: 0 };
@@ -362,8 +418,14 @@ async function persistEntries(
   }>
 ): Promise<number> {
   if (entries.length === 0) return 0;
+  // Drop anything older than the retention cap so we don't persist content
+  // that will be trimmed minutes later. Single choke point for X + blog +
+  // changelog so the cap is uniform across sources.
+  const cutoffMs = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const fresh = entries.filter((e) => new Date(e.published_at).getTime() >= cutoffMs);
+  if (fresh.length === 0) return 0;
   return insertEntries(
-    entries.map((e) => ({
+    fresh.map((e) => ({
       agent_slug: agentSlug,
       title: e.title.replace(/[—–]/g, ",").trim(),
       summary: e.summary.replace(/[—–]/g, ",").trim(),
