@@ -211,9 +211,10 @@ function CompactEntry({
 }
 
 function ExpandedDay({ items }: { items: EntryRow[] }) {
-  // -mr-6 lets the queue scroll past main's px-6 to the page edge.
+  // -mx-6 lets the queue scroll across main's full width, cancelling the
+  // px-6 padding of <main> so cards reach both edges of the content area.
   return (
-    <div className="-mr-6 flex gap-4 overflow-x-auto pb-3">
+    <div className="-mx-6 flex gap-4 overflow-x-auto pb-3">
       {items.map((entry) => (
         <EntryCard key={entry.id} entry={entry} />
       ))}
@@ -230,7 +231,7 @@ function TweetCard({ entry }: { entry: EntryRow }) {
   // X embed renders its own header (handle, time, link). Card just frames it.
   return (
     <article className="w-[400px] shrink-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-accent)]">
-      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} />}
+      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} card />}
     </article>
   );
 }

@@ -184,3 +184,37 @@ a { color: inherit; }
 }
 .embedded-tweet--compact [data-tweet-actions] { display: none; }
 .embedded-tweet--compact [data-tweet-info] { font-size: 11px; margin-top: 6px; }
+
+/* Card mode: roughly half the natural height. Used by /agents/<slug>
+   horizontal queue. Wider than --compact, body clamped to 4 lines, time
+   row hidden so the card stops at the body. */
+.embedded-tweet--card {
+  font-size: 14px;
+  line-height: 1.45;
+  max-height: 240px;
+  overflow: hidden;
+  border-radius: 10px;
+  position: relative;
+}
+.embedded-tweet--card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 36px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+}
+.embedded-tweet--card [data-tweet-container] { padding: 14px 16px; }
+.embedded-tweet--card [data-tweet-header] { gap: 8px; margin-bottom: 8px; }
+.embedded-tweet--card [data-tweet-header] img,
+.embedded-tweet--card [data-tweet-header] svg { width: 32px !important; height: 32px !important; }
+.embedded-tweet--card [data-tweet-body] {
+  font-size: 14px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.embedded-tweet--card [data-tweet-actions] { display: none; }
+.embedded-tweet--card [data-tweet-info] { display: none; }
