@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* AI Radar, light by default. Dark is opt-in via html.dark. */
+/* AI Radar, dark by default. Light is opt-in by removing html.dark. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {

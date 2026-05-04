@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // Light by default; the theme toggle adds `dark` to flip.
+    // Dark by default; the theme toggle removes `dark` to flip to light.
     <html
       lang="en"
       className={`${GeistSans.variable} ${GeistMono.variable}`}
