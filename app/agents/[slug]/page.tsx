@@ -6,13 +6,14 @@ import {
   getEntriesForAgent,
   type EntryRow,
 } from "@/lib/db";
-import { TimelineEntry } from "@/components/TimelineEntry";
+import { groupByPTDate } from "@/lib/groupByPTDate";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { DropsList } from "@/components/DropsList";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const revalidate = 300;
 
-const TEASER_LIMIT = 6;
+const ENTRIES_LIMIT = 200;
 
 export default async function AgentPage({
   params,
@@ -54,6 +55,8 @@ export default async function AgentPage({
     safeEntries(slug),
     safeActivity(slug),
   ]);
+
+  const groupedDays = groupByPTDate(entries);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -97,26 +100,15 @@ export default async function AgentPage({
       </div>
 
       <section>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
-            Recent drops
-          </h2>
-          <Link
-            href={`/drops?agent=${slug}`}
-            className="text-xs text-[var(--color-accent)] hover:underline"
-          >
-            See all {agent.name} drops →
-          </Link>
-        </div>
-
         {entries.length === 0 ? (
           <p className="text-[var(--color-text-muted)]">No entries yet.</p>
         ) : (
-          <div>
-            {entries.map((entry) => (
-              <TimelineEntry key={entry.id} entry={entry} />
-            ))}
-          </div>
+          <DropsList
+            groups={groupedDays}
+            expandable
+            defaultView="expanded"
+            storageKey={`agent:${slug}:view`}
+          />
         )}
       </section>
 
@@ -129,7 +121,7 @@ export default async function AgentPage({
 
 async function safeEntries(slug: string): Promise<EntryRow[]> {
   try {
-    return await getEntriesForAgent(slug, { limit: TEASER_LIMIT });
+    return await getEntriesForAgent(slug, { limit: ENTRIES_LIMIT });
   } catch (err) {
     console.error("[agent] db query failed:", err);
     return [];

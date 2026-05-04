@@ -2,35 +2,45 @@
 
 import { useEffect, useState } from "react";
 import type { EntryRow } from "@/lib/db";
+import type { DayGroup } from "@/lib/groupByPTDate";
 import { getAgentBySlug } from "@/content/agents";
-import { TimelineEntry } from "@/components/TimelineEntry";
-
-export type DropsDay = {
-  iso: string;
-  displayDate: string;
-  items: EntryRow[];
-};
-
-type Props = {
-  groups: DropsDay[];
-};
+import { EmbeddedTweet } from "@/components/EmbeddedTweet";
 
 type View = "compact" | "expanded";
 
+type Props = {
+  groups: DayGroup[];
+  /** When true, render a Compact ↔ Expanded toggle button. Defaults to compact-only. */
+  expandable?: boolean;
+  /** Initial view; only honored when expandable. */
+  defaultView?: View;
+  /** localStorage key for persisting the toggle. Only used when expandable. */
+  storageKey?: string;
+  /** Per-tool brand color on the compact rail dot. Off everywhere except /drops. */
+  tinted?: boolean;
+};
+
 const PAGE = 5;
 
-export function DropsList({ groups }: Props) {
-  const [view, setView] = useState<View>("expanded");
+export function DropsList({
+  groups,
+  expandable = false,
+  defaultView = "compact",
+  storageKey,
+  tinted = false,
+}: Props) {
+  const [view, setView] = useState<View>(defaultView);
   const [visibleCount, setVisibleCount] = useState(() => Math.min(PAGE, groups.length));
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() => allOpenForFirstN(groups, PAGE));
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
+    allOpenForFirstN(groups, PAGE),
+  );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = window.localStorage.getItem("drops:view");
+    if (!expandable || !storageKey || typeof window === "undefined") return;
+    const saved = window.localStorage.getItem(storageKey);
     if (saved === "compact" || saved === "expanded") setView(saved);
-  }, []);
+  }, [expandable, storageKey]);
 
-  // Reset on prop change (filters / pagination / date).
   useEffect(() => {
     setVisibleCount(Math.min(PAGE, groups.length));
     setOpenMap(allOpenForFirstN(groups, PAGE));
@@ -38,8 +48,10 @@ export function DropsList({ groups }: Props) {
 
   function toggleView() {
     setView((prev) => {
-      const next = prev === "compact" ? "expanded" : "compact";
-      if (typeof window !== "undefined") window.localStorage.setItem("drops:view", next);
+      const next: View = prev === "compact" ? "expanded" : "compact";
+      if (storageKey && typeof window !== "undefined") {
+        window.localStorage.setItem(storageKey, next);
+      }
       return next;
     });
   }
@@ -47,7 +59,6 @@ export function DropsList({ groups }: Props) {
   function showMore() {
     setVisibleCount((prev) => {
       const next = Math.min(prev + PAGE, groups.length);
-      // Auto-open the newly revealed groups too.
       setOpenMap((m) => {
         const out = { ...m };
         for (let i = prev; i < next; i++) out[groups[i].iso] = true;
@@ -57,22 +68,25 @@ export function DropsList({ groups }: Props) {
     });
   }
 
+  const effectiveView: View = expandable ? view : "compact";
   const toggleLabel = view === "compact" ? "Expanded view" : "Compact view";
   const visibleGroups = groups.slice(0, visibleCount);
   const remaining = groups.length - visibleCount;
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={toggleView}
-          className="rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-          aria-label={`Switch to ${view === "compact" ? "expanded" : "compact"} view`}
-        >
-          {toggleLabel}
-        </button>
-      </div>
+      {expandable && (
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleView}
+            className="rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            aria-label={`Switch to ${view === "compact" ? "expanded" : "compact"} view`}
+          >
+            {toggleLabel}
+          </button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {visibleGroups.map(({ iso, displayDate, items }) => {
@@ -85,7 +99,9 @@ export function DropsList({ groups }: Props) {
               onToggle={(e) => {
                 const next = (e.currentTarget as HTMLDetailsElement | null)?.open;
                 if (typeof next !== "boolean") return;
-                setOpenMap((prev) => (prev[iso] === next ? prev : { ...prev, [iso]: next }));
+                setOpenMap((prev) =>
+                  prev[iso] === next ? prev : { ...prev, [iso]: next },
+                );
               }}
               className="group border-t border-[var(--color-border)] [&_summary::-webkit-details-marker]:hidden"
             >
@@ -103,13 +119,11 @@ export function DropsList({ groups }: Props) {
                   ▾
                 </span>
               </summary>
-              <div className="pt-2 pb-2">
-                {view === "compact" ? (
-                  <CompactDay items={items} />
+              <div className="pt-2 pb-4">
+                {effectiveView === "compact" ? (
+                  <CompactDay items={items} tinted={tinted} />
                 ) : (
-                  items.map((entry) => (
-                    <TimelineEntry key={entry.id} entry={entry} tinted />
-                  ))
+                  <ExpandedDay items={items} />
                 )}
               </div>
             </details>
@@ -124,7 +138,7 @@ export function DropsList({ groups }: Props) {
             onClick={showMore}
             className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
           >
-            Show {Math.min(PAGE, remaining)} more {remaining === 1 ? "date" : "dates"} →
+            See more →
           </button>
         </div>
       )}
@@ -132,7 +146,7 @@ export function DropsList({ groups }: Props) {
   );
 }
 
-function CompactDay({ items }: { items: EntryRow[] }) {
+function CompactDay({ items, tinted }: { items: EntryRow[]; tinted: boolean }) {
   return (
     <ol className="relative ml-2 mt-2">
       <span
@@ -140,18 +154,33 @@ function CompactDay({ items }: { items: EntryRow[] }) {
         className="absolute left-[5px] top-1.5 bottom-1.5 w-px bg-[var(--color-border)]"
       />
       {items.map((entry, i) => (
-        <CompactEntry key={entry.id} entry={entry} last={i === items.length - 1} />
+        <CompactEntry
+          key={entry.id}
+          entry={entry}
+          last={i === items.length - 1}
+          tinted={tinted}
+        />
       ))}
     </ol>
   );
 }
 
-function CompactEntry({ entry, last }: { entry: EntryRow; last: boolean }) {
+function CompactEntry({
+  entry,
+  last,
+  tinted,
+}: {
+  entry: EntryRow;
+  last: boolean;
+  tinted: boolean;
+}) {
   const slug = entry.agent_slug;
   const agent = getAgentBySlug(slug);
   const time = formatTimePT(entry.published_at);
-  const dotColor = `var(--color-agent-${slug}, var(--color-accent))`;
-  const meta = time ? `${agent?.name ?? slug} · ${time}` : (agent?.name ?? slug);
+  const dotColor = tinted
+    ? `var(--color-agent-${slug}, var(--color-accent))`
+    : "var(--color-accent)";
+  const meta = time ? `${agent?.name ?? slug} · ${time}` : agent?.name ?? slug;
   return (
     <li className={["relative pl-7", last ? "pb-1" : "pb-7"].join(" ")}>
       <span
@@ -181,7 +210,52 @@ function CompactEntry({ entry, last }: { entry: EntryRow; last: boolean }) {
   );
 }
 
-function allOpenForFirstN(groups: DropsDay[], n: number): Record<string, boolean> {
+function ExpandedDay({ items }: { items: EntryRow[] }) {
+  return (
+    <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-3">
+      {items.map((entry) => (
+        <EntryCard key={entry.id} entry={entry} />
+      ))}
+    </div>
+  );
+}
+
+function EntryCard({ entry }: { entry: EntryRow }) {
+  const slug = entry.agent_slug;
+  const agent = getAgentBySlug(slug);
+  const time = formatTimePT(entry.published_at);
+  const isTweet = entry.source_type === "x" && !!entry.tweet_id;
+  return (
+    <article className="flex w-[320px] shrink-0 flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition hover:border-[var(--color-accent)]">
+      <div className="flex items-baseline justify-between gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
+        <span>{agent?.name ?? slug}</span>
+        {time && <span>{time}</span>}
+      </div>
+      <h3 className="text-base font-medium leading-snug text-[var(--color-text)]">
+        <a
+          href={entry.source_url}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-[var(--color-accent)]"
+        >
+          {entry.title}
+        </a>
+      </h3>
+      {entry.summary && (
+        <p className="line-clamp-3 text-sm leading-snug text-[var(--color-text-muted)]">
+          {entry.summary}
+        </p>
+      )}
+      {isTweet && entry.tweet_id && (
+        <div className="mt-auto pt-1">
+          <EmbeddedTweet id={entry.tweet_id} compact />
+        </div>
+      )}
+    </article>
+  );
+}
+
+function allOpenForFirstN(groups: DayGroup[], n: number): Record<string, boolean> {
   const out: Record<string, boolean> = {};
   const lim = Math.min(n, groups.length);
   for (let i = 0; i < lim; i++) out[groups[i].iso] = true;

@@ -6,6 +6,7 @@ import {
   getDailyActivityByAgent,
   type EntryRow,
 } from "@/lib/db";
+import { groupByPTDate } from "@/lib/groupByPTDate";
 import { AgentChips } from "@/components/AgentChips";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import { DropsList } from "@/components/DropsList";
@@ -19,19 +20,18 @@ export const metadata: Metadata = {
     "Every release, news drop, and X post from the AI tools we track. Newest first.",
 };
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 200;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function DropsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    before?: string;
     agent?: string;
     date?: string;
   }>;
 }) {
-  const { before, agent, date } = await searchParams;
+  const { agent, date } = await searchParams;
 
   const liveAgents = AGENTS.filter((a) => a.status === "live");
   const validAgentSlugs = new Set(liveAgents.map((a) => a.slug));
@@ -41,7 +41,6 @@ export default async function DropsPage({
 
   const [entries, activity] = await Promise.all([
     safeAll({
-      before: dateOnly ? undefined : before,
       limit: PAGE_SIZE,
       agentSlug,
       dateOnly,
@@ -55,8 +54,6 @@ export default async function DropsPage({
   const scopedAgentSlugs = agentSlug ? [agentSlug] : liveAgents.map((a) => a.slug);
 
   const groupedDays = groupByPTDate(entries);
-  const oldest = entries[entries.length - 1];
-  const hasMore = !dateOnly && entries.length === PAGE_SIZE;
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -119,18 +116,7 @@ export default async function DropsPage({
           {dateOnly ? ` on ${dateOnly}` : ""}.
         </p>
       ) : (
-        <DropsList groups={groupedDays} />
-      )}
-
-      {hasMore && oldest && (
-        <div className="mt-10 flex justify-center">
-          <Link
-            href={olderHref({ agentSlug, before: oldest.published_at })}
-            className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-          >
-            Older drops →
-          </Link>
-        </div>
+        <DropsList groups={groupedDays} tinted />
       )}
 
       <footer className="mt-20 border-t border-[var(--color-border)] pt-8">
@@ -138,13 +124,6 @@ export default async function DropsPage({
       </footer>
     </main>
   );
-}
-
-function olderHref(opts: { agentSlug?: string; before: string }): string {
-  const params = new URLSearchParams();
-  if (opts.agentSlug) params.set("agent", opts.agentSlug);
-  params.set("before", opts.before);
-  return `/drops?${params.toString()}`;
 }
 
 async function safeAll(opts: Parameters<typeof getAllEntries>[0]): Promise<EntryRow[]> {
@@ -164,31 +143,3 @@ async function safeActivity() {
     return [];
   }
 }
-
-type DayGroup = { iso: string; displayDate: string; items: EntryRow[] };
-
-function groupByPTDate(entries: EntryRow[]): DayGroup[] {
-  const map = new Map<string, DayGroup>();
-  for (const e of entries) {
-    const d = new Date(e.published_at);
-    const iso = d.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
-    let g = map.get(iso);
-    if (!g) {
-      g = {
-        iso,
-        displayDate: d.toLocaleDateString("en-US", {
-          timeZone: "America/Los_Angeles",
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-        items: [],
-      };
-      map.set(iso, g);
-    }
-    g.items.push(e);
-  }
-  return Array.from(map.values());
-}
-
