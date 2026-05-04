@@ -21,16 +21,12 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
       href={`/agents/${slug}`}
       className="group relative isolate flex flex-col gap-4 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 transition hover:-translate-y-px"
       style={{
-        // agent-tinted radial bleeding from top-right
-        backgroundImage: `radial-gradient(220px circle at calc(100% + 50px) -50px, var(--color-agent-${slug}-soft, transparent), transparent 65%)`,
+        backgroundImage: `radial-gradient(220px circle at calc(100% + 50px) -50px, var(--color-accent-soft), transparent 65%)`,
       }}
     >
       <div className="flex items-center justify-between">
         <h3 className="font-[family-name:var(--font-display)] font-normal text-2xl tracking-[-0.02em]">{agent.name}</h3>
-        <span
-          className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider"
-          style={{ color: `var(--color-agent-${slug}, var(--color-accent))` }}
-        >
+        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-[var(--color-accent)]">
           <span className="pulse-dot inline-block h-[6px] w-[6px] rounded-full bg-current" aria-hidden />
           Live
         </span>
@@ -46,7 +42,7 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
               background:
                 v === 0
                   ? "var(--color-surface-2)"
-                  : `color-mix(in oklch, var(--color-agent-${slug}, var(--color-accent)) ${[35, 65, 100][Math.min(v - 1, 2)]}%, var(--color-surface))`,
+                  : `color-mix(in oklch, var(--color-accent) ${[35, 65, 100][Math.min(v - 1, 2)]}%, var(--color-surface))`,
             }}
           />
         ))}
@@ -60,7 +56,7 @@ export function TrackedAgentCard({ agent, latest, activity }: Props) {
         <span>
           <span className="font-medium text-[var(--color-text)]">{recent7}</span> drops · 7d
         </span>
-        <span style={{ color: `var(--color-agent-${slug}, var(--color-accent))` }}>View profile →</span>
+        <span className="text-[var(--color-accent)]">View profile →</span>
       </div>
     </Link>
   );

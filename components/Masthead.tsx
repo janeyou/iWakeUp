@@ -26,7 +26,7 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
   return (
     <header className="mx-auto max-w-6xl px-8 sm:px-12 pt-14 pb-8 border-b border-[var(--color-border)]">
       <div className="mb-6 flex flex-wrap items-baseline gap-3 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
-        <span>Vol. 03 / Issue 124</span>
+        <span>Vol. 01 / Issue 001</span>
         <span className="text-[var(--color-border-strong)]">/</span>
         <span>{today} · PT</span>
         {stamp && (
@@ -49,7 +49,7 @@ export function Masthead({ recentCount, toolsLive, lastIngestedAt }: Props) {
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1.4fr_1fr] items-end">
         <p className="text-xl leading-snug text-[var(--color-text-muted)] max-w-[28ch]">
-          A daily public tracker of what the AI agents shipped while you slept. Updated every morning at 5am PT.
+          A daily public tracker of what the AI tools shipped while you slept. Updated every morning at 5am PT.
         </p>
         <div className="grid grid-cols-3 border-y border-[var(--color-border)]">
           <Stat label="Tools tracked" value={`${toolsLive}`} />

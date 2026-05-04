@@ -44,7 +44,7 @@ export default function WeeklyDigest({
           {entries.length === 0 ? (
             <Section style={section}>
               <Text style={text}>
-                Quiet week. Nothing major shipped from the tracked agents in the
+                Quiet week. Nothing major shipped from the tracked tools in the
                 last 7 days. The world is allowed a breather sometimes.
               </Text>
             </Section>

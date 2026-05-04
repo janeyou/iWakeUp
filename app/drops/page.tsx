@@ -6,9 +6,10 @@ import {
   getDailyActivityByAgent,
   type EntryRow,
 } from "@/lib/db";
-import { TimelineEntry } from "@/components/TimelineEntry";
+import { groupByPTDate } from "@/lib/groupByPTDate";
 import { AgentChips } from "@/components/AgentChips";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { DropsList } from "@/components/DropsList";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const revalidate = 300;
@@ -16,22 +17,21 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "All drops · AI Radar",
   description:
-    "Every release, news drop, and X post from the AI agents we track. Newest first.",
+    "Every release, news drop, and X post from the AI tools we track. Newest first.",
 };
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 200;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function DropsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    before?: string;
     agent?: string;
     date?: string;
   }>;
 }) {
-  const { before, agent, date } = await searchParams;
+  const { agent, date } = await searchParams;
 
   const liveAgents = AGENTS.filter((a) => a.status === "live");
   const validAgentSlugs = new Set(liveAgents.map((a) => a.slug));
@@ -41,7 +41,6 @@ export default async function DropsPage({
 
   const [entries, activity] = await Promise.all([
     safeAll({
-      before: dateOnly ? undefined : before,
       limit: PAGE_SIZE,
       agentSlug,
       dateOnly,
@@ -55,9 +54,6 @@ export default async function DropsPage({
   const scopedAgentSlugs = agentSlug ? [agentSlug] : liveAgents.map((a) => a.slug);
 
   const groupedDays = groupByPTDate(entries);
-  const todayPT = todayPTISODate();
-  const oldest = entries[entries.length - 1];
-  const hasMore = !dateOnly && entries.length === PAGE_SIZE;
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -73,10 +69,10 @@ export default async function DropsPage({
           All drops
         </p>
         <h1 className="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight text-[var(--color-text)]">
-          Every drop, every agent
+          Every drop, every tool we track
         </h1>
         <p className="mt-4 max-w-xl text-base text-[var(--color-text-muted)]">
-          The full archive: releases, news, and X posts from the agents we track. Newest first.
+          The full archive: releases, news, and X posts from the tools we track. Newest first.
         </p>
       </header>
 
@@ -85,6 +81,8 @@ export default async function DropsPage({
           mode="global"
           data={scopedActivity}
           agentSlugs={scopedAgentSlugs}
+          selectedDate={dateOnly}
+          tintByTool
         />
       </div>
 
@@ -103,8 +101,9 @@ export default async function DropsPage({
           </span>
           <Link
             href={agentSlug ? `/drops?agent=${agentSlug}` : "/drops"}
-            className="text-[var(--color-accent)] hover:underline"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-[var(--color-bg)]"
           >
+            <span aria-hidden className="text-base leading-none">×</span>
             Clear date
           </Link>
         </div>
@@ -117,50 +116,7 @@ export default async function DropsPage({
           {dateOnly ? ` on ${dateOnly}` : ""}.
         </p>
       ) : (
-        <div className="space-y-4">
-          {groupedDays.map(({ iso, displayDate, items }) => {
-            const isToday = iso === todayPT;
-            const agentNames = uniqueAgentNames(items);
-            return (
-              <details
-                key={iso}
-                open={isToday}
-                className="group border-t border-[var(--color-border)] [&_summary::-webkit-details-marker]:hidden"
-              >
-                <summary className="flex cursor-pointer items-baseline justify-between gap-3 py-3 list-none">
-                  <div className="flex flex-wrap items-baseline gap-3">
-                    <h2 className="text-2xl font-semibold tracking-tight text-[var(--color-text)]">
-                      {displayDate}
-                    </h2>
-                    <span className="text-sm text-[var(--color-text-muted)]">
-                      {items.length} {items.length === 1 ? "update" : "updates"}
-                      {agentNames.length > 0 ? ` · ${agentNames.join(", ")}` : ""}
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs text-[var(--color-text-faint)] transition group-open:rotate-180">
-                    ▾
-                  </span>
-                </summary>
-                <div className="pt-2 pb-2">
-                  {items.map((entry) => (
-                    <TimelineEntry key={entry.id} entry={entry} />
-                  ))}
-                </div>
-              </details>
-            );
-          })}
-        </div>
-      )}
-
-      {hasMore && oldest && (
-        <div className="mt-10 flex justify-center">
-          <Link
-            href={olderHref({ agentSlug, before: oldest.published_at })}
-            className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm text-[var(--color-text-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-          >
-            Older drops →
-          </Link>
-        </div>
+        <DropsList groups={groupedDays} tinted />
       )}
 
       <footer className="mt-20 border-t border-[var(--color-border)] pt-8">
@@ -168,13 +124,6 @@ export default async function DropsPage({
       </footer>
     </main>
   );
-}
-
-function olderHref(opts: { agentSlug?: string; before: string }): string {
-  const params = new URLSearchParams();
-  if (opts.agentSlug) params.set("agent", opts.agentSlug);
-  params.set("before", opts.before);
-  return `/drops?${params.toString()}`;
 }
 
 async function safeAll(opts: Parameters<typeof getAllEntries>[0]): Promise<EntryRow[]> {
@@ -193,47 +142,4 @@ async function safeActivity() {
     console.error("[drops] activity query failed:", err);
     return [];
   }
-}
-
-type DayGroup = { iso: string; displayDate: string; items: EntryRow[] };
-
-function groupByPTDate(entries: EntryRow[]): DayGroup[] {
-  const map = new Map<string, DayGroup>();
-  for (const e of entries) {
-    const d = new Date(e.published_at);
-    const iso = d.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
-    let g = map.get(iso);
-    if (!g) {
-      g = {
-        iso,
-        displayDate: d.toLocaleDateString("en-US", {
-          timeZone: "America/Los_Angeles",
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-        items: [],
-      };
-      map.set(iso, g);
-    }
-    g.items.push(e);
-  }
-  return Array.from(map.values());
-}
-
-function uniqueAgentNames(items: EntryRow[]): string[] {
-  const slugs = new Set(items.map((e) => e.agent_slug));
-  const out: string[] = [];
-  for (const slug of slugs) {
-    const a = getAgentBySlug(slug);
-    out.push(a?.name ?? slug);
-  }
-  return out.sort();
-}
-
-function todayPTISODate(): string {
-  return new Date().toLocaleDateString("en-CA", {
-    timeZone: "America/Los_Angeles",
-  });
 }

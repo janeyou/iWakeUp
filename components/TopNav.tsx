@@ -13,14 +13,19 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[color-mix(in_oklch,_var(--color-bg)_85%,_transparent)] backdrop-blur supports-[backdrop-filter]:bg-[color-mix(in_oklch,_var(--color-bg)_75%,_transparent)]">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-6 px-8 sm:px-12">
-        <Wordmark size="md" />
+        <div className="flex items-center gap-2">
+          <Wordmark size="md" />
+          <span className="rounded-full border border-[var(--color-accent)] px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+            Beta
+          </span>
+        </div>
 
         <nav className="hidden items-center gap-5 text-sm text-[var(--color-text-muted)] sm:flex">
           <Link href="/drops" className="hover:text-[var(--color-text)]">
             Drops
           </Link>
           <Link href="/agents" className="hover:text-[var(--color-text)]">
-            Agents
+            Tools
           </Link>
           <Link href="/learn" className="hover:text-[var(--color-text)]">
             Landscape

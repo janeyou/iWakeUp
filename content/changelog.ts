@@ -8,11 +8,11 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     date: "2026-05-04",
-    title: "New look: Geist, light by default, teal accent",
+    title: "v0.7, public beta",
     bullets: [
-      "Quieter masthead and footer, less display-shouty.",
-      "Compact embedded tweet on the lead drop so the timeline tiles stay above the fold.",
-      "Top nav: Drops, Landscape, Framework, Changelog. Status moved to the footer.",
+      "AI Radar is officially in public beta. Expect rough edges and fast changes.",
+      "/drops gets a compact text-only default view, weekly Sunday rollup on the changelog, and click-a-cell-to-expand on the heatmap.",
+      "Latest AI Drop always shows the top 5, even on quiet mornings.",
     ],
   },
   {

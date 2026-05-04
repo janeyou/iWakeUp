@@ -201,6 +201,17 @@ export async function getRecentEntries(hours = 24): Promise<EntryRow[]> {
   return rows;
 }
 
+export async function getLatestEntries(limit = 5): Promise<EntryRow[]> {
+  const { rows } = await sql<EntryRow>`
+    SELECT id, agent_slug, title, summary, source_url, source_type, entry_type,
+           tweet_id, video_url, published_at::text, ingested_at::text
+    FROM entries
+    ORDER BY published_at DESC
+    LIMIT ${limit}
+  `;
+  return rows;
+}
+
 export async function getLatestEntryForAgent(slug: string): Promise<EntryRow | null> {
   const { rows } = await sql<EntryRow>`
     SELECT id, agent_slug, title, summary, source_url, source_type, entry_type,

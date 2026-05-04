@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLiveAgents } from "@/content/agents";
 import {
   getRecentEntries,
+  getLatestEntries,
   getLastIngestedAt,
   getLatestEntryForAgent,
   getActivityByDay,
@@ -19,7 +20,10 @@ export default async function HomePage() {
   const liveAgents = getLiveAgents();
 
   const [recent, lastIngestedAt, ...rest] = await Promise.all([
-    safe(() => getRecentEntries(24), [] as EntryRow[]),
+    safe(async () => {
+      const r24 = await getRecentEntries(24);
+      return r24.length >= 5 ? r24 : await getLatestEntries(5);
+    }, [] as EntryRow[]),
     safe(() => getLastIngestedAt(), null as string | null),
     ...liveAgents.flatMap((a) => [
       safe(() => getLatestEntryForAgent(a.slug), null as EntryRow | null),
@@ -42,12 +46,12 @@ export default async function HomePage() {
       />
 
       <section className="mx-auto max-w-6xl px-8 sm:px-12 py-14">
-        <SectionHead kicker="Lead drop" title="Today's AI Drop" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
+        <SectionHead kicker="Lead drop" title="Latest AI Drop" right={<Link href="/drops" className="text-[var(--color-accent)] hover:underline">All drops →</Link>} />
         <TodayPanel entries={recent} />
       </section>
 
       <section className="mx-auto max-w-6xl px-8 sm:px-12 py-14">
-        <SectionHead kicker="Tools we track" title="Timelines" right={<Link href="/agents" className="text-[var(--color-accent)] hover:underline">All agents →</Link>} />
+        <SectionHead kicker="Tools we track" title="Timelines" right={<Link href="/agents" className="text-[var(--color-accent)] hover:underline">All tools →</Link>} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {perAgent.map(({ agent, latest, activity }) => (
             <TrackedAgentCard key={agent.slug} agent={agent} latest={latest} activity={activity} />
@@ -85,7 +89,7 @@ export default async function HomePage() {
             Read the framework essay →
           </a>
           <Link href="/learn" className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
-            Or scan the live landscape →
+            Or scan the agentic ai landscape →
           </Link>
         </div>
       </section>

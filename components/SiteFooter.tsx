@@ -10,7 +10,7 @@ export function SiteFooter() {
             href="https://www.janeyoubradley.com/"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-[var(--color-text)]"
+            className="text-[var(--color-accent)] hover:text-[var(--color-text)]"
           >
             Jane You Bradley
           </a>

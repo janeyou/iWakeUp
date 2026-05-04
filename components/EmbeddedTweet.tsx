@@ -10,6 +10,11 @@ type Props = {
    * react-tweet's internal spacing via CSS overrides defined in globals.css.
    */
   compact?: boolean;
+  /**
+   * Card mode for /agents/<slug> expanded queue cards. Caps height around
+   * half of a natural embed and clamps the body to 4 lines.
+   */
+  card?: boolean;
 };
 
 /**
@@ -17,10 +22,15 @@ type Props = {
  * drop. The compact mode is the default for TodayPanel; profile pages can
  * still render the standard size.
  */
-export function EmbeddedTweet({ id, compact = false }: Props) {
+export function EmbeddedTweet({ id, compact = false, card = false }: Props) {
+  const variant = card
+    ? "embedded-tweet embedded-tweet--card"
+    : compact
+      ? "embedded-tweet embedded-tweet--compact"
+      : "embedded-tweet";
   return (
     <div
-      className={compact ? "embedded-tweet embedded-tweet--compact" : "embedded-tweet"}
+      className={variant}
       style={compact ? { maxWidth: 420, width: "100%" } : undefined}
     >
       <Tweet id={id} />

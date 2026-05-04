@@ -3,23 +3,27 @@ import { notFound } from "next/navigation";
 import { getAgentBySlug } from "@/content/agents";
 import {
   getActivityByDay,
-  getEntriesForAgent,
+  getAllEntries,
   type EntryRow,
 } from "@/lib/db";
-import { TimelineEntry } from "@/components/TimelineEntry";
+import { groupByPTDate } from "@/lib/groupByPTDate";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { DropsList } from "@/components/DropsList";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const revalidate = 300;
 
-const TEASER_LIMIT = 6;
+const ENTRIES_LIMIT = 200;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function AgentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
-  const { slug } = await params;
+  const [{ slug }, { date }] = await Promise.all([params, searchParams]);
   const agent = getAgentBySlug(slug);
   if (!agent) notFound();
 
@@ -50,10 +54,14 @@ export default async function AgentPage({
     );
   }
 
+  const dateOnly = date && DATE_RE.test(date) ? date : undefined;
+
   const [entries, activity] = await Promise.all([
-    safeEntries(slug),
+    safeEntries(slug, dateOnly),
     safeActivity(slug),
   ]);
+
+  const groupedDays = groupByPTDate(entries);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -92,31 +100,38 @@ export default async function AgentPage({
         </div>
       </header>
 
-      <div className="mb-10">
-        <ActivityHeatmap data={activity} agentSlug={slug} />
+      <div className="mb-8">
+        <ActivityHeatmap data={activity} agentSlug={slug} selectedDate={dateOnly} />
       </div>
 
-      <section>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
-            Recent drops
-          </h2>
+      {dateOnly && (
+        <div className="mb-6 flex items-center gap-3 text-sm">
+          <span className="text-[var(--color-text-muted)]">
+            Showing drops for{" "}
+            <span className="font-mono text-[var(--color-text)]">{dateOnly}</span>
+          </span>
           <Link
-            href={`/drops?agent=${slug}`}
-            className="text-xs text-[var(--color-accent)] hover:underline"
+            href={`/agents/${slug}`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-accent)] hover:text-[var(--color-bg)]"
           >
-            See all {agent.name} drops →
+            <span aria-hidden className="text-base leading-none">×</span>
+            Clear date
           </Link>
         </div>
+      )}
 
+      <section>
         {entries.length === 0 ? (
-          <p className="text-[var(--color-text-muted)]">No entries yet.</p>
+          <p className="text-[var(--color-text-muted)]">
+            No entries{dateOnly ? ` on ${dateOnly}` : " yet"}.
+          </p>
         ) : (
-          <div>
-            {entries.map((entry) => (
-              <TimelineEntry key={entry.id} entry={entry} />
-            ))}
-          </div>
+          <DropsList
+            groups={groupedDays}
+            expandable
+            defaultView="expanded"
+            storageKey={`agent:${slug}:view`}
+          />
         )}
       </section>
 
@@ -127,9 +142,9 @@ export default async function AgentPage({
   );
 }
 
-async function safeEntries(slug: string): Promise<EntryRow[]> {
+async function safeEntries(slug: string, dateOnly: string | undefined): Promise<EntryRow[]> {
   try {
-    return await getEntriesForAgent(slug, { limit: TEASER_LIMIT });
+    return await getAllEntries({ agentSlug: slug, dateOnly, limit: ENTRIES_LIMIT });
   } catch (err) {
     console.error("[agent] db query failed:", err);
     return [];

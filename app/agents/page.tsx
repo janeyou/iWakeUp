@@ -12,7 +12,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Agents · AI Radar",
+  title: "Tools · AI Radar",
   description: "Available tools currently tracked on AI Radar.",
 };
 
@@ -42,7 +42,7 @@ export default async function AgentsPage() {
 
       <header className="mt-10 mb-10">
         <p className="font-mono text-xs uppercase tracking-wider text-[var(--color-accent)]">
-          Agents
+          Tools
         </p>
         <h1 className="mt-3 font-[family-name:var(--font-display)] font-normal text-[clamp(28px,3.6vw,44px)] leading-[1.15] tracking-[-0.01em] text-[var(--color-text)]">
           Tools currently tracked.
