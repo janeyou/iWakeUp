@@ -131,6 +131,9 @@ export default async function AgentPage({
             expandable
             defaultView="expanded"
             storageKey={`agent:${slug}:view`}
+            defaultOpenCount={1}
+            latestDayCap={5}
+            showMoreHref={`/drops?agent=${slug}`}
           />
         )}
       </section>

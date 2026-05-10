@@ -18,6 +18,15 @@ type Props = {
   storageKey?: string;
   /** Per-tool brand color on the compact rail dot. Off everywhere except /drops. */
   tinted?: boolean;
+  /**
+   * Cap the first day group to this many entries in compact view.
+   * A "show more" link appears when exceeded. Pair with showMoreHref.
+   */
+  latestDayCap?: number;
+  /** Href for the "show more" link shown when latestDayCap is set. */
+  showMoreHref?: string;
+  /** How many day-groups start open. Defaults to PAGE (5). */
+  defaultOpenCount?: number;
 };
 
 const PAGE = 5;
@@ -28,11 +37,15 @@ export function DropsList({
   defaultView = "compact",
   storageKey,
   tinted = false,
+  latestDayCap,
+  showMoreHref,
+  defaultOpenCount,
 }: Props) {
+  const openN = defaultOpenCount !== undefined ? defaultOpenCount : PAGE;
   const [view, setView] = useState<View>(defaultView);
   const [visibleCount, setVisibleCount] = useState(() => Math.min(PAGE, groups.length));
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
-    allOpenForFirstN(groups, PAGE),
+    allOpenForFirstN(groups, openN),
   );
 
   useEffect(() => {
@@ -43,8 +56,8 @@ export function DropsList({
 
   useEffect(() => {
     setVisibleCount(Math.min(PAGE, groups.length));
-    setOpenMap(allOpenForFirstN(groups, PAGE));
-  }, [groups]);
+    setOpenMap(allOpenForFirstN(groups, openN));
+  }, [groups, openN]);
 
   function toggleView() {
     setView((prev) => {
@@ -89,9 +102,16 @@ export function DropsList({
       )}
 
       <div className="space-y-4">
-        {visibleGroups.map(({ iso, displayDate, items }) => {
+        {visibleGroups.map(({ iso, displayDate, items }, groupIdx) => {
           const agentNames = uniqueAgentNames(items);
           const open = openMap[iso] ?? false;
+          const isFirstGroup = groupIdx === 0;
+          const cap =
+            isFirstGroup && latestDayCap != null && effectiveView === "compact"
+              ? latestDayCap
+              : undefined;
+          const cappedItems = cap != null ? items.slice(0, cap) : items;
+          const cappedRemainder = cap != null ? items.length - cappedItems.length : 0;
           return (
             <details
               key={iso}
@@ -121,9 +141,17 @@ export function DropsList({
               </summary>
               <div className="pt-2 pb-4">
                 {effectiveView === "compact" ? (
-                  <CompactDay items={items} tinted={tinted} />
+                  <CompactDay items={cappedItems} tinted={tinted} />
                 ) : (
-                  <ExpandedDay items={items} />
+                  <ExpandedDay items={cappedItems} />
+                )}
+                {cappedRemainder > 0 && showMoreHref && (
+                  <a
+                    href={showMoreHref}
+                    className="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-[var(--color-accent)] hover:underline"
+                  >
+                    +{cappedRemainder} more →
+                  </a>
                 )}
               </div>
             </details>
@@ -200,7 +228,7 @@ function CompactEntry({
         <h3 className="mt-1 text-base font-medium text-[var(--color-text)] group-hover/entry:text-[var(--color-accent)]">
           {entry.title}
         </h3>
-        {entry.summary && (
+        {entry.summary && !(entry.source_type === "x" && entry.tweet_id) && (
           <p className="mt-2 text-sm leading-snug text-[var(--color-text-muted)]">
             {entry.summary}
           </p>
@@ -211,10 +239,8 @@ function CompactEntry({
 }
 
 function ExpandedDay({ items }: { items: EntryRow[] }) {
-  // -mx-6 lets the queue scroll across main's full width, cancelling the
-  // px-6 padding of <main> so cards reach both edges of the content area.
   return (
-    <div className="scrollbar-thin -mx-6 flex gap-4 overflow-x-auto pb-3">
+    <div className="space-y-3 pt-1">
       {items.map((entry) => (
         <EntryCard key={entry.id} entry={entry} />
       ))}
@@ -228,10 +254,9 @@ function EntryCard({ entry }: { entry: EntryRow }) {
 }
 
 function TweetCard({ entry }: { entry: EntryRow }) {
-  // X embed renders its own header (handle, time, link). Card just frames it.
   return (
-    <article className="w-[400px] shrink-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-accent)]">
-      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} card />}
+    <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-accent)]">
+      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} />}
     </article>
   );
 }
@@ -241,7 +266,7 @@ function ContentCard({ entry }: { entry: EntryRow }) {
   const agent = getAgentBySlug(slug);
   const time = formatTimePT(entry.published_at);
   return (
-    <article className="flex w-[320px] shrink-0 flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition hover:border-[var(--color-accent)]">
+    <article className="flex flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition hover:border-[var(--color-accent)]">
       <div className="flex items-baseline justify-between gap-2 font-mono text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
         <span>{agent?.name ?? slug}</span>
         {time && <span>{time}</span>}

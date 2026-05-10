@@ -1,4 +1,5 @@
 import type { EntryRow } from "@/lib/db";
+import { dedupeThreads } from "@/lib/selectFeaturedDrops";
 
 export type DayGroup = {
   iso: string;
@@ -6,7 +7,10 @@ export type DayGroup = {
   items: EntryRow[];
 };
 
-/** Groups entries by PT calendar date (newest-first preserved from input). */
+/**
+ * Groups entries by PT calendar date (newest-first preserved).
+ * Thread dedup is applied within each day so tweet threads count as one entry.
+ */
 export function groupByPTDate(entries: EntryRow[]): DayGroup[] {
   const map = new Map<string, DayGroup>();
   for (const e of entries) {
@@ -28,6 +32,10 @@ export function groupByPTDate(entries: EntryRow[]): DayGroup[] {
       map.set(iso, g);
     }
     g.items.push(e);
+  }
+  // Apply thread dedup per day after all entries are grouped.
+  for (const g of map.values()) {
+    g.items = dedupeThreads(g.items);
   }
   return Array.from(map.values());
 }

@@ -59,7 +59,7 @@ function Lead({ entry }: { entry: EntryRow }) {
       <h3 className="font-[family-name:var(--font-display)] font-normal text-[28px] leading-[1.15] tracking-[-0.015em] text-[var(--color-text)]">
         {entry.title}
       </h3>
-      {entry.summary && (
+      {entry.summary && !isTweet && (
         <p className="text-base leading-relaxed text-[var(--color-text-muted)] max-w-[56ch]">{entry.summary}</p>
       )}
       {isTweet && entry.tweet_id && (

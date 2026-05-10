@@ -8,6 +8,7 @@ import {
   getActivityByDay,
   type EntryRow,
 } from "@/lib/db";
+import { selectFeaturedDrops } from "@/lib/selectFeaturedDrops";
 import { Masthead } from "@/components/Masthead";
 import { TodayPanel } from "@/components/TodayPanel";
 import { TrackedAgentCard } from "@/components/TrackedAgentCard";
@@ -21,8 +22,10 @@ export default async function HomePage() {
 
   const [recent, lastIngestedAt, ...rest] = await Promise.all([
     safe(async () => {
+      // Fetch a wider window so selectFeaturedDrops has enough diversity to pick from.
       const r24 = await getRecentEntries(24);
-      return r24.length >= 5 ? r24 : await getLatestEntries(5);
+      const pool = r24.length >= 20 ? r24 : await getLatestEntries(20);
+      return selectFeaturedDrops(pool, 5);
     }, [] as EntryRow[]),
     safe(() => getLastIngestedAt(), null as string | null),
     ...liveAgents.flatMap((a) => [
