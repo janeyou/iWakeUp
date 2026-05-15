@@ -7,42 +7,70 @@ import {
   type LandscapeEntry,
 } from "@/content/landscape";
 
+// Levels run across the X axis (L1 → L4); categories down the Y axis.
+// L5 lives in its own banner row below since nothing's shipped there yet.
+const LEVELS_X = LEVELS.filter((l) => l.id !== "L5");
+
 export function LandscapeMatrix() {
   return (
     <div className="overflow-x-auto -mx-6 px-6">
       <div
-        className="min-w-[820px] grid gap-px rounded-xl border border-[var(--color-border)] bg-[var(--color-border)] overflow-hidden"
-        style={{ gridTemplateColumns: "100px repeat(4, minmax(0, 1fr))" }}
+        className="min-w-[1100px] grid gap-px rounded-xl border border-[var(--color-border)] bg-[var(--color-border)] overflow-hidden"
+        style={{ gridTemplateColumns: "140px repeat(4, minmax(0, 1fr))" }}
       >
-        {/* Header row */}
+        {/* Header row: blank corner + L1..L4 with role */}
         <div className="bg-[var(--color-bg)] p-3" />
-        {CATEGORIES.map((c) => (
+        {LEVELS_X.map((l) => (
           <div
-            key={c.id}
-            className="bg-[var(--color-bg)] p-3 text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]"
+            key={l.id}
+            className="bg-[var(--color-bg)] p-3"
           >
-            {c.label}
+            <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
+              {l.label}
+            </div>
+            <div className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
+              {l.role}
+            </div>
           </div>
         ))}
 
-        {/* Level rows */}
-        {LEVELS.map((level) =>
-          level.id === "L5" ? <L5Row key={level.id} /> : <RowCells key={level.id} level={level} />
-        )}
+        {/* Category rows */}
+        {CATEGORIES.map((c) => (
+          <CategoryRow key={c.id} category={c} />
+        ))}
+
+        {/* L5 banner spanning the levels (label col + 4 levels = 5 cols) */}
+        <div className="bg-[var(--color-surface)] p-3">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
+            L5
+          </div>
+          <div className="mt-0.5 text-sm font-semibold text-[var(--color-text)]">
+            Executive
+          </div>
+        </div>
+        <div
+          className="bg-[var(--color-surface)] p-3 text-sm italic text-[var(--color-text-faint)]"
+          style={{ gridColumn: "span 4" }}
+        >
+          not yet shipped, this row is the horizon
+        </div>
       </div>
+
+      <Legend />
     </div>
   );
 }
 
-function RowCells({ level }: { level: (typeof LEVELS)[number] }) {
+function CategoryRow({ category }: { category: (typeof CATEGORIES)[number] }) {
   return (
     <>
       <div className="bg-[var(--color-surface)] p-3">
-        <div className="font-mono text-xs text-[var(--color-text-faint)]">{level.label}</div>
-        <div className="mt-1 text-sm font-semibold text-[var(--color-text)]">{level.role}</div>
+        <div className="text-sm font-semibold text-[var(--color-text)]">
+          {category.label}
+        </div>
       </div>
-      {CATEGORIES.map((cat) => (
-        <Cell key={cat.id} level={level.id} category={cat.id} />
+      {LEVELS_X.map((l) => (
+        <Cell key={l.id} level={l.id} category={category.id} />
       ))}
     </>
   );
@@ -53,9 +81,9 @@ function Cell({ level, category }: { level: Level; category: Category }) {
   return (
     <div className="bg-[var(--color-surface)] p-3 text-sm leading-relaxed">
       {items.length === 0 ? (
-        <span className="text-[var(--color-text-faint)]">none</span>
+        <span className="text-[var(--color-text-faint)]">—</span>
       ) : (
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1.5">
           {items.map((entry) => (
             <li key={entry.name}>
               <Item entry={entry} />
@@ -68,22 +96,30 @@ function Cell({ level, category }: { level: Level; category: Category }) {
 }
 
 function Item({ entry }: { entry: LandscapeEntry }) {
-  return <span className="text-[var(--color-text-muted)]">{entry.name}</span>;
+  return (
+    <span className="inline-flex items-baseline gap-1.5">
+      <span className="text-[var(--color-text-muted)]">{entry.name}</span>
+      {entry.previousLevel && (
+        <span
+          title={`moved from ${entry.previousLevel}`}
+          className="rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-wider text-[var(--color-accent)]"
+        >
+          ← {entry.previousLevel}
+        </span>
+      )}
+    </span>
+  );
 }
 
-function L5Row() {
+function Legend() {
   return (
-    <>
-      <div className="bg-[var(--color-surface)] p-3">
-        <div className="font-mono text-xs text-[var(--color-text-faint)]">L5</div>
-        <div className="mt-1 text-sm font-semibold text-[var(--color-text)]">Executive</div>
-      </div>
-      <div
-        className="col-span-4 bg-[var(--color-surface)] p-3 text-sm italic text-[var(--color-text-faint)]"
-        style={{ gridColumn: "span 4" }}
-      >
-        not yet shipped in 2026.04
-      </div>
-    </>
+    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-faint)]">
+      <span>
+        <span className="rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+          ← L2
+        </span>{" "}
+        marks a tool that graduated from a lower level since the last refresh
+      </span>
+    </div>
   );
 }
