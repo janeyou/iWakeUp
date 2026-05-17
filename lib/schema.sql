@@ -88,3 +88,15 @@ CREATE TABLE IF NOT EXISTS digest_approvals (
   subscriber_count INT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Editorial issue drafts. One row per Sunday week_key. content holds the full
+-- DigestIssue shape (themes, headline, footer copy, etc) so the email send,
+-- preview page, and /issues/[weekKey] permalink all render from one source.
+CREATE TABLE IF NOT EXISTS digest_issues (
+  week_key            TEXT        PRIMARY KEY,
+  content             JSONB       NOT NULL,
+  model_used          TEXT,
+  draft_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  regenerated_at      TIMESTAMPTZ,
+  regenerated_count   INT         NOT NULL DEFAULT 0
+);

@@ -1,24 +1,15 @@
 import { NextResponse } from "next/server";
-import { AGENTS } from "@/content/agents";
 import {
   getActiveSubscribers,
   getDigestApproval,
-  getRecentEntries,
+  getDigestIssue,
   markDigestSent,
 } from "@/lib/db";
 import { sendDigestEmail } from "@/lib/email";
+import { getCurrentWeekKey } from "@/lib/issue";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
-
-// Returns the coming Monday's date as YYYY-MM-DD (consistent with weekly-preview)
-function getWeekKey(): string {
-  const now = new Date();
-  const monday = new Date(now);
-  const day = now.getUTCDay();
-  if (day === 0) monday.setUTCDate(now.getUTCDate() + 1);
-  return monday.toISOString().split("T")[0];
-}
 
 export async function GET(request: Request) {
   const auth = request.headers.get("authorization");
@@ -28,7 +19,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const force = url.searchParams.get("force") === "true";
-  const weekKey = getWeekKey();
+  const weekKey = url.searchParams.get("week") ?? getCurrentWeekKey();
 
   // Approval gate — skip unless approved (or force=true for manual override)
   if (!force) {
@@ -37,7 +28,7 @@ export async function GET(request: Request) {
       return NextResponse.json({
         skipped: true,
         weekKey,
-        reason: "digest not approved — check your inbox for the Sunday preview and click Approve",
+        reason: "digest not approved — check your inbox for the Saturday preview and click Approve",
       });
     }
     if (approval.sent_at) {
@@ -45,16 +36,19 @@ export async function GET(request: Request) {
     }
   }
 
-  const entries = await getRecentEntries(24 * 7);
-  const subscribers = await getActiveSubscribers();
+  const issueRow = await getDigestIssue(weekKey);
+  if (!issueRow) {
+    return NextResponse.json(
+      {
+        error: "no draft exists for this week — run /api/cron/weekly-preview first",
+        weekKey,
+      },
+      { status: 409 },
+    );
+  }
 
-  const agentNameBySlug = Object.fromEntries(AGENTS.map((a) => [a.slug, a.name]));
-  const weekLabel = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "America/Los_Angeles",
-  });
+  const subscribers = await getActiveSubscribers();
+  const issue = issueRow.content;
 
   let sent = 0;
   let failed = 0;
@@ -63,9 +57,7 @@ export async function GET(request: Request) {
       await sendDigestEmail({
         to: sub.email,
         unsubscribeToken: sub.unsubscribe_token,
-        entries,
-        agentNameBySlug,
-        weekLabel,
+        issue,
       });
       sent++;
     } catch (err) {
@@ -78,8 +70,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     weekKey,
-    weekLabel,
-    entryCount: entries.length,
+    weekLabel: issue.weekRangeLabel,
     subscriberCount: subscribers.length,
     sent,
     failed,

@@ -2,7 +2,8 @@ import { Resend } from "resend";
 import ConfirmSignup from "@/emails/ConfirmSignup";
 import ConfirmSignupJb from "@/emails/ConfirmSignupJb";
 import WeeklyDigest from "@/emails/WeeklyDigest";
-import type { EntryRow } from "@/lib/db";
+import type { DigestIssue } from "@/lib/digest-content";
+import { getIssueNumbers } from "@/lib/issue";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM = process.env.RESEND_FROM ?? "AI Radar <hi@janeyoubradley.com>";
@@ -37,25 +38,24 @@ export async function sendConfirmEmail(
 export async function sendDigestEmail(args: {
   to: string;
   unsubscribeToken: string;
-  entries: EntryRow[];
-  agentNameBySlug: Record<string, string>;
-  weekLabel: string;
+  issue: DigestIssue;
   approveUrl?: string;
-}): Promise<void> {
+}): Promise<{ dryRun: boolean }> {
   const unsubscribeUrl = `${siteUrl()}/api/subscribe/unsubscribe?token=${args.unsubscribeToken}`;
   const subjectPrefix = args.approveUrl ? "[PREVIEW] " : "";
+  const { vol, issue: issueNum } = getIssueNumbers(args.issue.weekKey);
   if (!client) {
-    console.log(`[email] dry-run digest to ${args.to}: ${args.entries.length} entries`);
-    return;
+    console.log(
+      `[email] dry-run digest to ${args.to}: Vol ${vol} Issue ${issueNum} (RESEND_API_KEY missing or empty)`,
+    );
+    return { dryRun: true };
   }
   const { error } = await client.emails.send({
     from: RESEND_FROM,
     to: args.to,
-    subject: `${subjectPrefix}AI Radar · ${args.weekLabel}`,
+    subject: `${subjectPrefix}AI Radar · Vol ${vol} Issue ${issueNum} · ${args.issue.weekRangeLabel}`,
     react: WeeklyDigest({
-      entries: args.entries,
-      agentNameBySlug: args.agentNameBySlug,
-      weekLabel: args.weekLabel,
+      issue: args.issue,
       unsubscribeUrl,
       approveUrl: args.approveUrl,
     }),
@@ -65,4 +65,5 @@ export async function sendDigestEmail(args: {
     },
   });
   if (error) throw new Error(`Resend send failed: ${error.message}`);
+  return { dryRun: false };
 }

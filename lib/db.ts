@@ -519,3 +519,59 @@ export async function markDigestSent(weekKey: string): Promise<void> {
     UPDATE digest_approvals SET sent_at = now() WHERE week_key = ${weekKey}
   `;
 }
+
+// ── Editorial issue storage ───────────────────────────────────────────────────
+
+import type { DigestIssue } from "@/lib/digest-content";
+
+export type DigestIssueRow = {
+  week_key: string;
+  content: DigestIssue;
+  model_used: string | null;
+  draft_at: string;
+  regenerated_at: string | null;
+  regenerated_count: number;
+};
+
+export async function getDigestIssue(weekKey: string): Promise<DigestIssueRow | null> {
+  const { rows } = await sql<DigestIssueRow>`
+    SELECT week_key, content, model_used,
+           draft_at::text, regenerated_at::text, regenerated_count
+    FROM digest_issues
+    WHERE week_key = ${weekKey}
+  `;
+  return rows[0] ?? null;
+}
+
+export async function saveDigestIssue(
+  weekKey: string,
+  content: DigestIssue,
+  modelUsed: string | null,
+): Promise<{ regenerated: boolean }> {
+  const existing = await getDigestIssue(weekKey);
+  if (existing) {
+    await sql`
+      UPDATE digest_issues
+      SET content = ${JSON.stringify(content)}::jsonb,
+          model_used = ${modelUsed},
+          regenerated_at = now(),
+          regenerated_count = regenerated_count + 1
+      WHERE week_key = ${weekKey}
+    `;
+    return { regenerated: true };
+  }
+  await sql`
+    INSERT INTO digest_issues (week_key, content, model_used)
+    VALUES (${weekKey}, ${JSON.stringify(content)}::jsonb, ${modelUsed})
+  `;
+  return { regenerated: false };
+}
+
+export async function listDigestIssueKeys(limit = 50): Promise<string[]> {
+  const { rows } = await sql<{ week_key: string }>`
+    SELECT week_key FROM digest_issues
+    ORDER BY week_key DESC
+    LIMIT ${limit}
+  `;
+  return rows.map((r) => r.week_key);
+}
