@@ -41,6 +41,10 @@ function formatSource(raw: string | null): { domain: string; page: string } {
   };
 }
 
+function getsRadarDigest(s: SubscriberRow): boolean {
+  return !!s.confirmed_at && !s.unsubscribed_at && !(s.source ?? "").startsWith("jb:");
+}
+
 function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: number; active: number }[] {
   const map = new Map<string, { total: number; active: number }>();
   for (const s of subs) {
@@ -48,7 +52,7 @@ function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: nu
     const label = page ? `${domain} / ${page}` : domain;
     const entry = map.get(label) ?? { total: 0, active: 0 };
     entry.total++;
-    if (s.confirmed_at && !s.unsubscribed_at) entry.active++;
+    if (getsRadarDigest(s)) entry.active++;
     map.set(label, entry);
   }
   return Array.from(map.entries())

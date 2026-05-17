@@ -411,7 +411,9 @@ export async function getActiveSubscribers(): Promise<SubscriberRow[]> {
     SELECT email, confirmed_at::text, unsubscribed_at::text,
            confirm_token, unsubscribe_token, source, created_at::text
     FROM subscribers
-    WHERE confirmed_at IS NOT NULL AND unsubscribed_at IS NULL
+    WHERE confirmed_at IS NOT NULL
+      AND unsubscribed_at IS NULL
+      AND (source IS NULL OR source NOT LIKE 'jb:%')
     ORDER BY confirmed_at DESC
   `;
   return rows;
