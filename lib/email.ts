@@ -33,8 +33,10 @@ export async function sendDigestEmail(args: {
   entries: EntryRow[];
   agentNameBySlug: Record<string, string>;
   weekLabel: string;
+  approveUrl?: string;
 }): Promise<void> {
   const unsubscribeUrl = `${siteUrl()}/api/subscribe/unsubscribe?token=${args.unsubscribeToken}`;
+  const subjectPrefix = args.approveUrl ? "[PREVIEW] " : "";
   if (!client) {
     console.log(`[email] dry-run digest to ${args.to}: ${args.entries.length} entries`);
     return;
@@ -42,12 +44,13 @@ export async function sendDigestEmail(args: {
   const { error } = await client.emails.send({
     from: RESEND_FROM,
     to: args.to,
-    subject: `AI Radar · ${args.weekLabel}`,
+    subject: `${subjectPrefix}AI Radar · ${args.weekLabel}`,
     react: WeeklyDigest({
       entries: args.entries,
       agentNameBySlug: args.agentNameBySlug,
       weekLabel: args.weekLabel,
       unsubscribeUrl,
+      approveUrl: args.approveUrl,
     }),
     headers: {
       "List-Unsubscribe": `<${unsubscribeUrl}>`,

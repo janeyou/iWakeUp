@@ -77,3 +77,12 @@ CREATE TABLE IF NOT EXISTS tool_suggestions (
   contact_email TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS digest_approvals (
+  week_key         TEXT        PRIMARY KEY,
+  approved_at      TIMESTAMPTZ,
+  sent_at          TIMESTAMPTZ,
+  entry_count      INT,
+  subscriber_count INT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);

@@ -17,6 +17,7 @@ export type WeeklyDigestProps = {
   agentNameBySlug: Record<string, string>;
   weekLabel: string;
   unsubscribeUrl: string;
+  approveUrl?: string;
 };
 
 export default function WeeklyDigest({
@@ -24,6 +25,7 @@ export default function WeeklyDigest({
   agentNameBySlug,
   weekLabel,
   unsubscribeUrl,
+  approveUrl,
 }: WeeklyDigestProps) {
   const grouped = new Map<string, EntryRow[]>();
   for (const e of entries) {
@@ -38,6 +40,17 @@ export default function WeeklyDigest({
       <Preview>{`What the AI agents shipped this week, ${weekLabel}`}</Preview>
       <Body style={body}>
         <Container style={container}>
+          {approveUrl && (
+            <Section style={approveBanner}>
+              <Text style={approveNote}>
+                Preview — this is what subscribers will receive. Looks good?
+              </Text>
+              <Link href={approveUrl} style={approveCta}>
+                Approve and send Monday 5am PT →
+              </Link>
+            </Section>
+          )}
+
           <Heading style={h1}>AI Radar</Heading>
           <Text style={muted}>{`Week of ${weekLabel}`}</Text>
 
@@ -183,4 +196,26 @@ const footer: React.CSSProperties = {
 const footerLink: React.CSSProperties = {
   color: "#9ca3af",
   textDecoration: "underline",
+};
+const approveBanner: React.CSSProperties = {
+  marginBottom: "32px",
+  padding: "16px 20px",
+  backgroundColor: "#0d2818",
+  borderRadius: "8px",
+  border: "1px solid #1a4a2e",
+};
+const approveNote: React.CSSProperties = {
+  margin: "0 0 12px 0",
+  fontSize: "13px",
+  color: "#9ca3af",
+};
+const approveCta: React.CSSProperties = {
+  display: "inline-block",
+  padding: "10px 18px",
+  backgroundColor: "#4ec989",
+  color: "#0e1014",
+  fontWeight: 600,
+  fontSize: "13px",
+  textDecoration: "none",
+  borderRadius: "6px",
 };

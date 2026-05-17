@@ -438,3 +438,52 @@ export async function upsertSourceState(s: NewSourceState): Promise<void> {
       last_error = EXCLUDED.last_error
   `;
 }
+
+// ── Digest approvals ──────────────────────────────────────────────────────────
+
+export type DigestApprovalRow = {
+  week_key: string;
+  approved_at: string | null;
+  sent_at: string | null;
+  entry_count: number | null;
+  subscriber_count: number | null;
+};
+
+export async function upsertDigestPreview(
+  weekKey: string,
+  entryCount: number,
+  subscriberCount: number,
+): Promise<void> {
+  await sql`
+    INSERT INTO digest_approvals (week_key, entry_count, subscriber_count)
+    VALUES (${weekKey}, ${entryCount}, ${subscriberCount})
+    ON CONFLICT (week_key) DO UPDATE SET
+      entry_count      = EXCLUDED.entry_count,
+      subscriber_count = EXCLUDED.subscriber_count
+  `;
+}
+
+export async function getDigestApproval(weekKey: string): Promise<DigestApprovalRow | null> {
+  const { rows } = await sql<DigestApprovalRow>`
+    SELECT week_key, approved_at::text, sent_at::text, entry_count, subscriber_count
+    FROM digest_approvals
+    WHERE week_key = ${weekKey}
+  `;
+  return rows[0] ?? null;
+}
+
+export async function approveDigest(weekKey: string): Promise<DigestApprovalRow | null> {
+  const { rows } = await sql<DigestApprovalRow>`
+    UPDATE digest_approvals
+    SET approved_at = COALESCE(approved_at, now())
+    WHERE week_key = ${weekKey}
+    RETURNING week_key, approved_at::text, sent_at::text, entry_count, subscriber_count
+  `;
+  return rows[0] ?? null;
+}
+
+export async function markDigestSent(weekKey: string): Promise<void> {
+  await sql`
+    UPDATE digest_approvals SET sent_at = now() WHERE week_key = ${weekKey}
+  `;
+}

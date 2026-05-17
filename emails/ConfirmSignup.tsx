@@ -19,15 +19,16 @@ export default function ConfirmSignup({ confirmUrl }: ConfirmSignupProps) {
   return (
     <Html>
       <Head />
-      <Preview>One click to confirm your AI Radar digest.</Preview>
+      <Preview>One click to confirm — your Monday morning AI digest.</Preview>
       <Body style={body}>
         <Container style={container}>
           <Heading style={h1}>AI Radar</Heading>
-          <Text style={muted}>What the AI agents shipped while you slept.</Text>
+          <Text style={muted}>One email a week. The week&apos;s notable AI releases, news, and posts.</Text>
           <Section style={section}>
             <Text style={text}>
-              Thanks for signing up. Click the link below to confirm your email
-              and start receiving the weekly digest, every Monday at 5am PT.
+              Thanks for signing up. Click below to confirm your email and start
+              receiving the Monday morning digest — what shipped in AI last week,
+              every Monday at 5am PT. Free, no ads, unsubscribe in one click.
             </Text>
             <Link href={confirmUrl} style={cta}>
               Confirm my email →

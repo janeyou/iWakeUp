@@ -5,7 +5,6 @@ import {
   getAllSourceStates,
   getEntryCountsByAgent,
   getLastIngestedAt,
-  getSubscriberStats,
   type SourceStateRow,
 } from "@/lib/db";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -19,11 +18,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {
-  const [states, counts, lastIngestedAt, subs] = await Promise.all([
+  const [states, counts, lastIngestedAt] = await Promise.all([
     safe(() => getAllSourceStates(), [] as SourceStateRow[]),
     safe(() => getEntryCountsByAgent(), [] as { agent_slug: string; count: number }[]),
     safe(() => getLastIngestedAt(), null as string | null),
-    safe(() => getSubscriberStats(), { total: 0, confirmed: 0, unsubscribed: 0 }),
   ]);
 
   const stamp = lastIngestedAt
@@ -69,10 +67,9 @@ export default async function StatusPage() {
       </header>
 
       {/* Summary tiles */}
-      <section className="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <section className="mb-12 grid grid-cols-3 gap-4">
         <Tile label="Live agents" value={AGENTS.filter((a) => a.status === "live").length} />
         <Tile label="Total entries" value={Array.from(countsBySlug.values()).reduce((s, n) => s + n, 0)} />
-        <Tile label="Subscribers" value={subs.confirmed} suffix={`/ ${subs.total}`} />
         <Tile label="Sources tracked" value={(states as SourceStateRow[]).length} />
       </section>
 
