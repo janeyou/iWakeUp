@@ -145,26 +145,38 @@ export default async function AdminPage({
       {/* Subscriber list */}
       {displayed.length > 0 ? (
         <section className="mb-10">
-          <ul className="divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-            {displayed.map((s) => (
-              <li key={s.email} className="flex items-center justify-between gap-4 px-4 py-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={["shrink-0 h-2 w-2 rounded-full", getsRadarDigest(s) ? "bg-[var(--color-accent)]" : getsJbDigest(s) ? "bg-[var(--color-news)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
-                  <span className="truncate font-mono text-sm text-[var(--color-text)] ml-1">
-                    {s.email}
-                  </span>
-                </div>
-                <div className="shrink-0 text-right font-mono text-xs text-[var(--color-text-faint)]">
-                  <div>{formatSource(s.source)}</div>
-                  <div>{fmtDate(s.created_at)}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
+            {/* Table header */}
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 border-b border-[var(--color-border)] px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
+              <span>Email</span>
+              <span className="text-center w-20">AI Radar</span>
+              <span className="text-center w-24">janeyoubradley.com</span>
+              <span className="text-right w-28">Signed up</span>
+            </div>
+            {/* Rows */}
+            <ul className="divide-y divide-[var(--color-border)]">
+              {displayed.map((s) => {
+                const isRadar = !(s.source ?? "").startsWith("jb:");
+                const isJb = (s.source ?? "").startsWith("jb:");
+                const active = !!s.confirmed_at && !s.unsubscribed_at;
+                return (
+                  <li key={s.email} className="grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3">
+                    <span className="truncate font-mono text-sm text-[var(--color-text)]">{s.email}</span>
+                    <span className="w-20 flex justify-center">
+                      {isRadar && <span className={["h-2 w-2 rounded-full", active ? "bg-[var(--color-accent)]" : "bg-[var(--color-border-strong)]"].join(" ")} />}
+                    </span>
+                    <span className="w-24 flex justify-center">
+                      {isJb && <span className={["h-2 w-2 rounded-full", active ? "bg-[var(--color-news)]" : "bg-[var(--color-border-strong)]"].join(" ")} />}
+                    </span>
+                    <span className="w-28 text-right font-mono text-xs text-[var(--color-text-faint)]">{fmtDate(s.created_at)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
           <p className="mt-2 flex items-center gap-4 text-xs text-[var(--color-text-faint)]">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)] inline-block" /> AI Radar digest</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-news)] inline-block" /> JB digest (not yet active)</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)] inline-block" /> not active</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)] inline-block" /> active</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)] inline-block" /> pending / unsubscribed</span>
           </p>
         </section>
       ) : (
