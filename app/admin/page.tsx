@@ -25,34 +25,36 @@ function applyFilter(subs: SubscriberRow[], filter: Filter): SubscriberRow[] {
   return subs;
 }
 
-// Converts raw source strings to human-readable "domain · page"
-function formatSource(raw: string | null): { domain: string; page: string } {
-  if (!raw) return { domain: "unknown", page: "" };
-  const [prefix, page] = raw.split(":");
-  const domainMap: Record<string, string> = {
-    waitlist: "airadarapp.com",
-    radar: "airadarapp.com",
-    jb: "janeyoubradley.com",
-    pmclaws: "pmclaws.com",
-  };
-  return {
-    domain: domainMap[prefix] ?? prefix,
-    page: page ?? "",
-  };
+const SOURCE_LABELS: Record<string, string> = {
+  "waitlist:home":    "AI Radar · home page",
+  "waitlist:learn":   "AI Radar · /learn page",
+  "radar:home":       "AI Radar · home page",
+  "jb:waitlist":      "janeyoubradley.com · waitlist",
+  "jb:home":          "janeyoubradley.com · home page",
+  "pmclaws:waitlist": "pmclaws.com · waitlist",
+};
+
+function formatSource(raw: string | null): string {
+  if (!raw) return "unknown";
+  return SOURCE_LABELS[raw] ?? raw;
 }
 
 function getsRadarDigest(s: SubscriberRow): boolean {
   return !!s.confirmed_at && !s.unsubscribed_at && !(s.source ?? "").startsWith("jb:");
 }
 
-function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: number; active: number }[] {
-  const map = new Map<string, { total: number; active: number }>();
+function getsJbDigest(s: SubscriberRow): boolean {
+  return !!s.confirmed_at && !s.unsubscribed_at && (s.source ?? "").startsWith("jb:");
+}
+
+function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: number; radarDigest: number; jbDigest: number }[] {
+  const map = new Map<string, { total: number; radarDigest: number; jbDigest: number }>();
   for (const s of subs) {
-    const { domain, page } = formatSource(s.source);
-    const label = page ? `${domain} / ${page}` : domain;
-    const entry = map.get(label) ?? { total: 0, active: 0 };
+    const label = formatSource(s.source);
+    const entry = map.get(label) ?? { total: 0, radarDigest: 0, jbDigest: 0 };
     entry.total++;
-    if (getsRadarDigest(s)) entry.active++;
+    if (getsRadarDigest(s)) entry.radarDigest++;
+    if (getsJbDigest(s)) entry.jbDigest++;
     map.set(label, entry);
   }
   return Array.from(map.entries())
@@ -125,16 +127,17 @@ export default async function AdminPage({
           <ul className="divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             {sourceBreakdown.map((row) => (
               <li key={row.label} className="flex items-center justify-between gap-4 px-4 py-3">
-                <span className="font-mono text-sm text-[var(--color-text)]">{row.label}</span>
+                <span className="text-sm text-[var(--color-text)]">{row.label}</span>
                 <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-faint)]">
-                  <span className="text-[var(--color-accent)]">{row.active} get digest</span>
+                  {row.radarDigest > 0 && <span className="text-[var(--color-accent)]">{row.radarDigest} AI Radar</span>}
+                  {row.jbDigest > 0 && <span className="text-[var(--color-news)]">{row.jbDigest} JB</span>}
                   <span>{row.total} total</span>
                 </div>
               </li>
             ))}
           </ul>
           <p className="mt-2 text-xs text-[var(--color-text-faint)]">
-            "Get digest" = confirmed + not unsubscribed. Weekly digest sends to these only.
+            Digest counts = confirmed + not unsubscribed. JB digest not yet active.
           </p>
         </section>
       )}
@@ -145,31 +148,25 @@ export default async function AdminPage({
           <ul className="divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             {displayed.map((s) => (
               <li key={s.email} className="flex items-center justify-between gap-4 px-4 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={[
-                      "shrink-0 h-2 w-2 rounded-full",
-                      s.confirmed_at && !s.unsubscribed_at
-                        ? "bg-[var(--color-accent)]"
-                        : "bg-[var(--color-text-faint)]",
-                    ].join(" ")}
-                  />
-                  <span className="truncate font-mono text-sm text-[var(--color-text)]">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span title="AI Radar digest" className={["shrink-0 h-2 w-2 rounded-full", getsRadarDigest(s) ? "bg-[var(--color-accent)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
+                  <span title="janeyoubradley.com digest" className={["shrink-0 h-2 w-2 rounded-full", getsJbDigest(s) ? "bg-[var(--color-news)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
+                  <span className="truncate font-mono text-sm text-[var(--color-text)] ml-1">
                     {s.email}
                   </span>
                 </div>
                 <div className="shrink-0 text-right font-mono text-xs text-[var(--color-text-faint)]">
-                  <div>{(() => { const { domain, page } = formatSource(s.source); return page ? `${domain} / ${page}` : domain; })()}</div>
+                  <div>{formatSource(s.source)}</div>
                   <div>{fmtDate(s.created_at)}</div>
                 </div>
               </li>
             ))}
           </ul>
-          {filter === "all" && allSubs.length > 0 && (
-            <p className="mt-2 text-xs text-[var(--color-text-faint)]">
-              Green dot = confirmed. Showing all {allSubs.length}.
-            </p>
-          )}
+          <p className="mt-2 flex items-center gap-4 text-xs text-[var(--color-text-faint)]">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)] inline-block" /> AI Radar digest</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-news)] inline-block" /> janeyoubradley.com digest</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)] inline-block" /> not receiving</span>
+          </p>
         </section>
       ) : (
         <p className="mb-10 text-sm text-[var(--color-text-faint)]">No subscribers in this group.</p>
