@@ -149,8 +149,7 @@ export default async function AdminPage({
             {displayed.map((s) => (
               <li key={s.email} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span title="AI Radar digest" className={["shrink-0 h-2 w-2 rounded-full", getsRadarDigest(s) ? "bg-[var(--color-accent)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
-                  <span title="janeyoubradley.com digest" className={["shrink-0 h-2 w-2 rounded-full", getsJbDigest(s) ? "bg-[var(--color-news)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
+                  <span className={["shrink-0 h-2 w-2 rounded-full", getsRadarDigest(s) ? "bg-[var(--color-accent)]" : getsJbDigest(s) ? "bg-[var(--color-news)]" : "bg-[var(--color-border-strong)]"].join(" ")} />
                   <span className="truncate font-mono text-sm text-[var(--color-text)] ml-1">
                     {s.email}
                   </span>
@@ -164,8 +163,8 @@ export default async function AdminPage({
           </ul>
           <p className="mt-2 flex items-center gap-4 text-xs text-[var(--color-text-faint)]">
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-accent)] inline-block" /> AI Radar digest</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-news)] inline-block" /> janeyoubradley.com digest</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)] inline-block" /> not receiving</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-news)] inline-block" /> JB digest (not yet active)</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)] inline-block" /> not active</span>
           </p>
         </section>
       ) : (
