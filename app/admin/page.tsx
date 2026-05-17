@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
   getSubscriberStats,
-  getActiveSubscribers,
+  getAllSubscribers,
   getDigestApproval,
+  type SubscriberRow,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -15,16 +16,66 @@ function weekKey(): string {
   return sat.toISOString().split("T")[0];
 }
 
-export default async function AdminPage() {
-  const [stats, subscribers, digest] = await Promise.all([
+type Filter = "active" | "pending" | "unsubscribed" | "all";
+
+function applyFilter(subs: SubscriberRow[], filter: Filter): SubscriberRow[] {
+  if (filter === "active") return subs.filter((s) => s.confirmed_at && !s.unsubscribed_at);
+  if (filter === "pending") return subs.filter((s) => !s.confirmed_at && !s.unsubscribed_at);
+  if (filter === "unsubscribed") return subs.filter((s) => !!s.unsubscribed_at);
+  return subs;
+}
+
+// Converts raw source strings to human-readable "domain · page"
+function formatSource(raw: string | null): { domain: string; page: string } {
+  if (!raw) return { domain: "unknown", page: "" };
+  const [prefix, page] = raw.split(":");
+  const domainMap: Record<string, string> = {
+    waitlist: "airadarapp.com",
+    radar: "airadarapp.com",
+    jb: "janeyoubradley.com",
+    pmclaws: "pmclaws.com",
+  };
+  return {
+    domain: domainMap[prefix] ?? prefix,
+    page: page ?? "",
+  };
+}
+
+function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: number; active: number }[] {
+  const map = new Map<string, { total: number; active: number }>();
+  for (const s of subs) {
+    const { domain, page } = formatSource(s.source);
+    const label = page ? `${domain} / ${page}` : domain;
+    const entry = map.get(label) ?? { total: 0, active: 0 };
+    entry.total++;
+    if (s.confirmed_at && !s.unsubscribed_at) entry.active++;
+    map.set(label, entry);
+  }
+  return Array.from(map.entries())
+    .map(([label, counts]) => ({ label, ...counts }))
+    .sort((a, b) => b.total - a.total);
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter: rawFilter } = await searchParams;
+  const filter: Filter =
+    rawFilter === "active" || rawFilter === "pending" || rawFilter === "unsubscribed"
+      ? rawFilter
+      : "all";
+
+  const [stats, allSubs, digest] = await Promise.all([
     getSubscriberStats(),
-    getActiveSubscribers(),
+    getAllSubscribers(),
     getDigestApproval(weekKey()),
   ]);
 
-  const recentSubs = [...subscribers]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 20);
+  const displayed = applyFilter(allSubs, filter);
+  const pending = stats.total - stats.confirmed - stats.unsubscribed;
+  const sourceBreakdown = buildSourceBreakdown(allSubs);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
@@ -40,31 +91,63 @@ export default async function AdminPage() {
       </header>
 
       {/* Subscriber tiles */}
-      <section className="mb-10">
+      <section className="mb-6">
         <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
           Subscribers
         </h2>
         <div className="grid grid-cols-3 gap-4">
-          <Tile label="Active" value={stats.confirmed} accent />
-          <Tile label="Pending confirm" value={stats.total - stats.confirmed - stats.unsubscribed} />
-          <Tile label="Unsubscribed" value={stats.unsubscribed} />
+          <TileLink label="Active" value={stats.confirmed} href="/admin?filter=active" active={filter === "active"} accent />
+          <TileLink label="Pending confirm" value={pending} href="/admin?filter=pending" active={filter === "pending"} />
+          <TileLink label="Unsubscribed" value={stats.unsubscribed} href="/admin?filter=unsubscribed" active={filter === "unsubscribed"} />
         </div>
+        {filter !== "all" && (
+          <div className="mt-3 flex items-center gap-3">
+            <span className="text-xs text-[var(--color-text-faint)]">
+              Showing {displayed.length} {filter}
+            </span>
+            <Link href="/admin" className="text-xs text-[var(--color-accent)] hover:underline">
+              Clear filter
+            </Link>
+          </div>
+        )}
       </section>
 
-      {/* Recent signups */}
-      {recentSubs.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
-            Recent signups
+      {/* Source breakdown */}
+      {sourceBreakdown.length > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-faint)]">
+            Signups by source
           </h2>
           <ul className="divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-            {recentSubs.map((s) => (
+            {sourceBreakdown.map((row) => (
+              <li key={row.label} className="flex items-center justify-between gap-4 px-4 py-3">
+                <span className="font-mono text-sm text-[var(--color-text)]">{row.label}</span>
+                <div className="flex items-center gap-4 font-mono text-xs text-[var(--color-text-faint)]">
+                  <span className="text-[var(--color-accent)]">{row.active} get digest</span>
+                  <span>{row.total} total</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-[var(--color-text-faint)]">
+            "Get digest" = confirmed + not unsubscribed. Weekly digest sends to these only.
+          </p>
+        </section>
+      )}
+
+      {/* Subscriber list */}
+      {displayed.length > 0 ? (
+        <section className="mb-10">
+          <ul className="divide-y divide-[var(--color-border)] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+            {displayed.map((s) => (
               <li key={s.email} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <span
                     className={[
                       "shrink-0 h-2 w-2 rounded-full",
-                      s.confirmed_at ? "bg-[var(--color-accent)]" : "bg-[var(--color-text-faint)]",
+                      s.confirmed_at && !s.unsubscribed_at
+                        ? "bg-[var(--color-accent)]"
+                        : "bg-[var(--color-text-faint)]",
                     ].join(" ")}
                   />
                   <span className="truncate font-mono text-sm text-[var(--color-text)]">
@@ -72,16 +155,20 @@ export default async function AdminPage() {
                   </span>
                 </div>
                 <div className="shrink-0 text-right font-mono text-xs text-[var(--color-text-faint)]">
-                  <div>{s.source ?? "—"}</div>
+                  <div>{(() => { const { domain, page } = formatSource(s.source); return page ? `${domain} / ${page}` : domain; })()}</div>
                   <div>{fmtDate(s.created_at)}</div>
                 </div>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-[var(--color-text-faint)]">
-            Green dot = confirmed. Showing last {recentSubs.length}.
-          </p>
+          {filter === "all" && allSubs.length > 0 && (
+            <p className="mt-2 text-xs text-[var(--color-text-faint)]">
+              Green dot = confirmed. Showing all {allSubs.length}.
+            </p>
+          )}
         </section>
+      ) : (
+        <p className="mb-10 text-sm text-[var(--color-text-faint)]">No subscribers in this group.</p>
       )}
 
       {/* Digest state */}
@@ -154,9 +241,21 @@ function fmtDate(iso: string) {
   });
 }
 
-function Tile({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function TileLink({
+  label, value, href, active, accent,
+}: {
+  label: string; value: number; href: string; active: boolean; accent?: boolean;
+}) {
   return (
-    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+    <Link
+      href={href}
+      className={[
+        "block rounded-xl border p-4 transition hover:border-[var(--color-accent)]",
+        active
+          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)]",
+      ].join(" ")}
+    >
       <p className="text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">{label}</p>
       <p className={[
         "mt-1 font-mono text-2xl font-semibold",
@@ -164,7 +263,7 @@ function Tile({ label, value, accent }: { label: string; value: number; accent?:
       ].join(" ")}>
         {value}
       </p>
-    </div>
+    </Link>
   );
 }
 

@@ -396,6 +396,16 @@ export async function unsubscribeSubscriber(token: string): Promise<SubscriberRo
   return rows[0] ?? null;
 }
 
+export async function getAllSubscribers(): Promise<SubscriberRow[]> {
+  const { rows } = await sql<SubscriberRow>`
+    SELECT email, confirmed_at::text, unsubscribed_at::text,
+           confirm_token, unsubscribe_token, source, created_at::text
+    FROM subscribers
+    ORDER BY created_at DESC
+  `;
+  return rows;
+}
+
 export async function getActiveSubscribers(): Promise<SubscriberRow[]> {
   const { rows } = await sql<SubscriberRow>`
     SELECT email, confirmed_at::text, unsubscribed_at::text,
