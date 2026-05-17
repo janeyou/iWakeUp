@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   }
   if (isJb && result.row.confirmed_at) {
     return NextResponse.json(
-      { ok: true, message: "Added to the list — no confirmation needed, your email is already verified." },
+      { ok: true, message: "You're on the list." },
       { headers }
     );
   }

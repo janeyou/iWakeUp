@@ -6,6 +6,7 @@ import type { EntryRow } from "@/lib/db";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM = process.env.RESEND_FROM ?? "AI Radar <hi@janeyoubradley.com>";
+const RESEND_FROM_JB = "Jane You Bradley <hi@janeyoubradley.com>";
 
 const client = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
@@ -25,7 +26,7 @@ export async function sendConfirmEmail(
     return;
   }
   const { error } = await client.emails.send({
-    from: RESEND_FROM,
+    from: isJb ? RESEND_FROM_JB : RESEND_FROM,
     to: email,
     subject: isJb ? "Confirm your email — janeyoubradley.com" : "Confirm your AI Radar digest",
     react: isJb ? ConfirmSignupJb({ confirmUrl }) : ConfirmSignup({ confirmUrl }),
