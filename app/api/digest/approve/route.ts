@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     `<div class="icon">✅</div>
      <h1>Digest approved</h1>
      <p>The AI Radar digest for week of <strong>${week}</strong><br>
-     will send to <strong>${subs} subscriber${subs === 1 ? "" : "s"}</strong> Monday at 5am PT.</p>
+     will send to <strong>${subs} subscriber${subs === 1 ? "" : "s"}</strong> Sunday at 6am PT.</p>
      <p class="small">${entries} entries · you can close this tab</p>`
   ), { headers: { "Content-Type": "text/html" } });
 }

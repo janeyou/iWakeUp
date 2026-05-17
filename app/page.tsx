@@ -69,7 +69,7 @@ export default async function HomePage() {
             One email a week, with the highlights.
           </h3>
           <p className="mt-3 text-[var(--color-text-muted)]">
-            We bundle the week&apos;s notable releases, news, and posts into a Sunday-evening digest. Free, no ads, unsubscribe in one click.
+            We bundle the week&apos;s notable releases, news, and posts into a Sunday morning digest. Free, no ads, unsubscribe in one click.
           </p>
           <div className="mt-5 flex justify-center">
             <SubscribeForm source="home" />
