@@ -44,7 +44,11 @@ function getsRadarDigest(s: SubscriberRow): boolean {
 }
 
 function getsJbDigest(s: SubscriberRow): boolean {
-  return !!s.confirmed_at && !s.unsubscribed_at && (s.source ?? "").startsWith("jb:");
+  return !!s.confirmed_at && !s.unsubscribed_at && !!s.jb_subscribed_at;
+}
+
+function isJbSubscriber(s: SubscriberRow): boolean {
+  return !!s.jb_subscribed_at;
 }
 
 function buildSourceBreakdown(subs: SubscriberRow[]): { label: string; total: number; radarDigest: number; jbDigest: number }[] {
@@ -157,7 +161,7 @@ export default async function AdminPage({
             <ul className="divide-y divide-[var(--color-border)]">
               {displayed.map((s) => {
                 const isRadar = !(s.source ?? "").startsWith("jb:");
-                const isJb = (s.source ?? "").startsWith("jb:");
+                const isJb = isJbSubscriber(s);
                 const active = !!s.confirmed_at && !s.unsubscribed_at;
                 return (
                   <li key={s.email} className="grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-4 py-3">

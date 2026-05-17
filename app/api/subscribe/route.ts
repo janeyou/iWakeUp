@@ -42,9 +42,25 @@ export async function POST(request: Request) {
     source: isWaitlistMode ? `waitlist:${source}` : source,
   });
 
-  if (result.existed) {
+  const isJb = source.startsWith("jb:");
+
+  if (result.existed && !isJb) {
     return NextResponse.json(
       { ok: true, message: "Already on the list. Welcome back." },
+      { headers }
+    );
+  }
+
+  // JB signup for an email already confirmed — no need to re-verify
+  if (isJb && result.alreadyJb) {
+    return NextResponse.json(
+      { ok: true, message: "Already on the list. Welcome back." },
+      { headers }
+    );
+  }
+  if (isJb && result.row.confirmed_at) {
+    return NextResponse.json(
+      { ok: true, message: "Added to the list — no confirmation needed, your email is already verified." },
       { headers }
     );
   }

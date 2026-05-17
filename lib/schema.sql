@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS subscribers (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS jb_subscribed_at TIMESTAMPTZ;
+
 CREATE INDEX IF NOT EXISTS subscribers_active
   ON subscribers(confirmed_at)
   WHERE unsubscribed_at IS NULL;

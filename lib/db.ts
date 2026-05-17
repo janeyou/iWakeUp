@@ -353,25 +353,42 @@ export type SubscriberRow = {
   confirm_token: string;
   unsubscribe_token: string;
   source: string | null;
+  jb_subscribed_at: string | null;
   created_at: string;
 };
+
+const SEL = `email, confirmed_at::text, unsubscribed_at::text,
+  confirm_token, unsubscribe_token, source,
+  jb_subscribed_at::text, created_at::text`;
 
 export async function addSubscriber(args: {
   email: string;
   confirmToken: string;
   unsubscribeToken: string;
   source?: string;
-}): Promise<{ existed: boolean; row: SubscriberRow }> {
+}): Promise<{ existed: boolean; alreadyJb: boolean; row: SubscriberRow }> {
+  const isJb = (args.source ?? "").startsWith("jb:");
   const { rows } = await sql<SubscriberRow>`
-    INSERT INTO subscribers (email, confirm_token, unsubscribe_token, source)
-    VALUES (${args.email}, ${args.confirmToken}, ${args.unsubscribeToken}, ${args.source ?? null})
+    INSERT INTO subscribers (email, confirm_token, unsubscribe_token, source, jb_subscribed_at)
+    VALUES (
+      ${args.email}, ${args.confirmToken}, ${args.unsubscribeToken},
+      ${args.source ?? null},
+      ${isJb ? new Date().toISOString() : null}
+    )
     ON CONFLICT (email) DO UPDATE SET
       unsubscribed_at = NULL,
-      confirm_token = CASE WHEN subscribers.confirmed_at IS NULL THEN EXCLUDED.confirm_token ELSE subscribers.confirm_token END
+      confirm_token = CASE WHEN subscribers.confirmed_at IS NULL THEN EXCLUDED.confirm_token ELSE subscribers.confirm_token END,
+      jb_subscribed_at = CASE WHEN ${isJb} THEN COALESCE(subscribers.jb_subscribed_at, now()) ELSE subscribers.jb_subscribed_at END
     RETURNING email, confirmed_at::text, unsubscribed_at::text,
-              confirm_token, unsubscribe_token, source, created_at::text
+              confirm_token, unsubscribe_token, source,
+              jb_subscribed_at::text, created_at::text
   `;
-  return { existed: rows[0].confirmed_at !== null, row: rows[0] };
+  const row = rows[0];
+  return {
+    existed: row.confirmed_at !== null && !isJb,
+    alreadyJb: isJb && row.jb_subscribed_at !== null && row.confirmed_at !== null,
+    row,
+  };
 }
 
 export async function confirmSubscriber(token: string): Promise<SubscriberRow | null> {
@@ -380,7 +397,8 @@ export async function confirmSubscriber(token: string): Promise<SubscriberRow | 
     SET confirmed_at = COALESCE(confirmed_at, now())
     WHERE confirm_token = ${token}
     RETURNING email, confirmed_at::text, unsubscribed_at::text,
-              confirm_token, unsubscribe_token, source, created_at::text
+              confirm_token, unsubscribe_token, source,
+              jb_subscribed_at::text, created_at::text
   `;
   return rows[0] ?? null;
 }
@@ -391,7 +409,8 @@ export async function unsubscribeSubscriber(token: string): Promise<SubscriberRo
     SET unsubscribed_at = COALESCE(unsubscribed_at, now())
     WHERE unsubscribe_token = ${token}
     RETURNING email, confirmed_at::text, unsubscribed_at::text,
-              confirm_token, unsubscribe_token, source, created_at::text
+              confirm_token, unsubscribe_token, source,
+              jb_subscribed_at::text, created_at::text
   `;
   return rows[0] ?? null;
 }
@@ -399,9 +418,9 @@ export async function unsubscribeSubscriber(token: string): Promise<SubscriberRo
 export async function getAllSubscribers(): Promise<SubscriberRow[]> {
   const { rows } = await sql<SubscriberRow>`
     SELECT email, confirmed_at::text, unsubscribed_at::text,
-           confirm_token, unsubscribe_token, source, created_at::text
-    FROM subscribers
-    ORDER BY created_at DESC
+           confirm_token, unsubscribe_token, source,
+           jb_subscribed_at::text, created_at::text
+    FROM subscribers ORDER BY created_at DESC
   `;
   return rows;
 }
@@ -409,7 +428,8 @@ export async function getAllSubscribers(): Promise<SubscriberRow[]> {
 export async function getActiveSubscribers(): Promise<SubscriberRow[]> {
   const { rows } = await sql<SubscriberRow>`
     SELECT email, confirmed_at::text, unsubscribed_at::text,
-           confirm_token, unsubscribe_token, source, created_at::text
+           confirm_token, unsubscribe_token, source,
+           jb_subscribed_at::text, created_at::text
     FROM subscribers
     WHERE confirmed_at IS NOT NULL
       AND unsubscribed_at IS NULL
