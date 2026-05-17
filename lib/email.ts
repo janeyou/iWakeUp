@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import ConfirmSignup from "@/emails/ConfirmSignup";
+import ConfirmSignupJb from "@/emails/ConfirmSignupJb";
 import WeeklyDigest from "@/emails/WeeklyDigest";
 import type { EntryRow } from "@/lib/db";
 
@@ -12,8 +13,13 @@ export function siteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-export async function sendConfirmEmail(email: string, confirmToken: string): Promise<void> {
+export async function sendConfirmEmail(
+  email: string,
+  confirmToken: string,
+  source?: string,
+): Promise<void> {
   const confirmUrl = `${siteUrl()}/api/subscribe/confirm?token=${confirmToken}`;
+  const isJb = (source ?? "").startsWith("jb:");
   if (!client) {
     console.log(`[email] dry-run confirm to ${email}: ${confirmUrl}`);
     return;
@@ -21,8 +27,8 @@ export async function sendConfirmEmail(email: string, confirmToken: string): Pro
   const { error } = await client.emails.send({
     from: RESEND_FROM,
     to: email,
-    subject: "Confirm your AI Radar digest",
-    react: ConfirmSignup({ confirmUrl }),
+    subject: isJb ? "Confirm your email — janeyoubradley.com" : "Confirm your AI Radar digest",
+    react: isJb ? ConfirmSignupJb({ confirmUrl }) : ConfirmSignup({ confirmUrl }),
   });
   if (error) throw new Error(`Resend send failed: ${error.message}`);
 }

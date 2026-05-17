@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendConfirmEmail(email, result.row.confirm_token);
+    await sendConfirmEmail(email, result.row.confirm_token, source);
   } catch (err) {
     console.error("[subscribe] send confirm failed:", err);
     return NextResponse.json(
