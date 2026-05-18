@@ -50,9 +50,12 @@ export async function GET(request: Request) {
   const subscribers = await getActiveSubscribers();
   const issue = issueRow.content;
 
+  // Pace sends ~500ms apart to stay under Resend's burst rate limit.
+  // Without this gap, 8-recipient batches see ~3 silent 429 failures.
   let sent = 0;
   let failed = 0;
-  for (const sub of subscribers) {
+  for (let i = 0; i < subscribers.length; i++) {
+    const sub = subscribers[i];
     try {
       await sendDigestEmail({
         to: sub.email,
@@ -63,6 +66,9 @@ export async function GET(request: Request) {
     } catch (err) {
       console.error(`[digest] failed for ${sub.email}:`, err);
       failed++;
+    }
+    if (i < subscribers.length - 1) {
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
 
