@@ -256,7 +256,28 @@ function EntryCard({ entry }: { entry: EntryRow }) {
 function TweetCard({ entry }: { entry: EntryRow }) {
   return (
     <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 transition hover:border-[var(--color-accent)]">
-      {entry.tweet_id && <EmbeddedTweet id={entry.tweet_id} />}
+      {entry.tweet_id && (
+        <EmbeddedTweet
+          id={entry.tweet_id}
+          fallback={
+            // This card holds nothing but the embed, so on failure show the
+            // tweet text plus an explicit link rather than an empty card.
+            <div className="flex flex-col gap-2 p-2">
+              {entry.summary && (
+                <p className="text-sm leading-snug text-[var(--color-text)]">{entry.summary}</p>
+              )}
+              <a
+                href={entry.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-[11px] uppercase tracking-wide text-[var(--color-accent)] hover:underline"
+              >
+                View on X →
+              </a>
+            </div>
+          }
+        />
+      )}
     </article>
   );
 }

@@ -66,7 +66,19 @@ function Lead({ entry }: { entry: EntryRow }) {
         // Compact embed, capped at 420px so it never out-shouts the lead headline.
         // Body clamps to 3 lines; padding/avatar are tightened in EmbeddedTweet's `compact` mode.
         <div className="max-w-[420px] w-full">
-          <EmbeddedTweet id={entry.tweet_id} compact />
+          <EmbeddedTweet
+            id={entry.tweet_id}
+            compact
+            fallback={
+              entry.summary ? (
+                // X couldn't embed the post; the card itself already links to
+                // the source, so show the tweet text rather than a blank block.
+                <p className="text-base leading-relaxed text-[var(--color-text-muted)] max-w-[56ch]">
+                  {entry.summary}
+                </p>
+              ) : null
+            }
+          />
         </div>
       )}
       <div className="mt-auto inline-flex items-center gap-1.5 font-mono text-[11.5px] uppercase tracking-wide text-[var(--color-accent)]">
