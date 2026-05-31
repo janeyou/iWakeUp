@@ -31,6 +31,13 @@ const WEB_THEME_CSS = `
 .aw-issue-content [style*="#e7e5e1"] {
   border-color: var(--color-border) !important;
 }
+/* The OUTER container is the email's card frame — remove it on web so the
+   content flows seamlessly into the page. Inner theme cards + entry rows
+   keep their borders for structure. */
+.aw-issue-content.m-container {
+  border: 0 !important;
+  border-radius: 0 !important;
+}
 .aw-issue-content [style*="color:#d0cdc6"] {
   color: var(--color-border-strong) !important;
 }
