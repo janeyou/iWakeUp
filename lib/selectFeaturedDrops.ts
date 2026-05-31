@@ -3,14 +3,25 @@ import type { EntryRow } from "@/lib/db";
 const THREAD_WINDOW_MS = 3 * 60 * 1000; // 3 minutes
 
 /**
- * Signal rank: 3 = best. Uses the LLM quality_score when available (X posts),
+ * Default significance (0-10 scale) for entries with no LLM quality_score.
+ * Only changelog/blog entries are unscored — X posts always carry a score.
+ * A real shipped feature sits above-average, so routine tweets (4-6) rank
+ * below official releases while genuinely huge news (7-10) can still lead.
+ * Tunable: bump these to weight official releases harder vs X chatter.
+ */
+const UNSCORED_RANK: Record<EntryRow["entry_type"], number> = {
+  release: 6,
+  news: 5,
+  post: 3,
+};
+
+/**
+ * Signal rank: 10 = best. Uses the LLM quality_score when available (X posts),
  * falls back to entry_type for blog/changelog entries that are not LLM-scored.
  */
 function signalRank(e: EntryRow): number {
   if (e.quality_score != null) return e.quality_score;
-  if (e.entry_type === "release") return 3;
-  if (e.entry_type === "news") return 2;
-  return 1;
+  return UNSCORED_RANK[e.entry_type];
 }
 
 /**

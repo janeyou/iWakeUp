@@ -7,16 +7,18 @@ import { classifyTweet } from "@/lib/x";
  * Per-tweet editorial verdict from the LLM filter.
  *
  *   keep   = false → don't insert. Pure noise / off-topic.
- *   score  = 0 noise (always paired with keep=false)
- *            1 low signal but worth keeping (community color, soft commentary)
- *            2 medium signal (reactions to product news, soft launches)
- *            3 high signal (clear release / model / API change / launch)
+ *   score  = 0-10 significance (0 noise, always paired with keep=false):
+ *            1-2  community color (memes, reactions) — keep but bury
+ *            3-4  minor / incremental (small feature, soft commentary, hiring)
+ *            5-6  solid (notable feature release, meaningful update / partnership)
+ *            7-8  major (significant new capability, big platform expansion)
+ *            9-10 landscape-defining (frontier model launch, mega funding round)
  *   kind   = mapped onto our existing entry_type enum
  *   reason = one-sentence audit trail; surfaces in DB for the digest LLM
  */
 export type TweetQuality = {
   keep: boolean;
-  score: 0 | 1 | 2 | 3;
+  score: number; // 0-10, see scale above
   kind: EntryType;
   reason: string;
 };
@@ -83,18 +85,20 @@ function fallback(tweet: XTweet): ScoredTweet {
     tweet,
     quality: {
       keep: true,
-      score: 1,
+      // Neutral mid so an LLM outage doesn't bury every tweet under the
+      // type-based fallback scores used for changelog/blog entries.
+      score: 4,
       kind: classifyTweet(tweet.text),
       reason: "fallback (no LLM)",
     },
   };
 }
 
-function clampScore(n: unknown): 0 | 1 | 2 | 3 {
-  const v = typeof n === "number" ? Math.round(n) : 1;
+function clampScore(n: unknown): number {
+  const v = typeof n === "number" ? Math.round(n) : 4;
   if (v <= 0) return 0;
-  if (v >= 3) return 3;
-  return v as 1 | 2;
+  if (v >= 10) return 10;
+  return v;
 }
 
 function clampKind(k: unknown): EntryType {
@@ -102,35 +106,26 @@ function clampKind(k: unknown): EntryType {
   return "post";
 }
 
-const SYSTEM_PROMPT = `You are AI Radar's X-tweet quality filter. AI Radar tracks releases, news, and shipping updates from AI agent products.
+const SYSTEM_PROMPT = `You are AI Radar's X-tweet quality filter. AI Radar tracks releases, news, and shipping updates from AI agent products. Your score drives which drop leads the homepage, so spread scores across the full range — most tweets are ordinary and should land in the middle, not the top.
 
 For each tweet you receive, decide:
 - keep: true if it would matter to a reader following AI agent shipping news; false if pure noise / off-topic.
-- score: 0 (noise, drop), 1 (low signal, keep), 2 (medium), 3 (high signal: clear release / model / API change / launch).
+- score: 0-10 significance to that reader (use the full range, anchors below).
 - kind: "release" (product / model / feature shipped), "news" (announcement / partnership / research / hiring), "post" (commentary, demo, community signal).
 - reason: one short sentence explaining the call.
 
-KEEP examples (score 2-3):
-- Product launches, new models, feature shipments, API changes, pricing changes.
-- Founder commentary about the product (roadmap hints, sneak peeks, philosophy applied to product).
-- Major bug fix or known-issue acknowledgments.
-- Partnership / acquisition involving the product.
-- Shipping demos or "in production" videos with the product.
+SCORE ANCHORS:
+- 9-10: landscape-defining. Frontier model launch, category-defining product, mega funding round / acquisition that resets the competitive picture.
+- 7-8: major. A significant new capability shipped, big platform expansion, flagship feature that unlocks new workflows for many users.
+- 5-6: solid. A notable feature release, meaningful product update, real partnership — useful but not headline-moving.
+- 3-4: minor / incremental. Small feature, soft launch, roadmap hint, hiring that signals investment, substantive founder commentary.
+- 1-2: community color. Memes, jokes, reactions to others' news, low-text media posts. Keep for texture, but bury.
+- 0: noise — set keep=false. Off-topic (sports, politics, personal), generic thanks/greetings, promo spam, replies that don't move the product story.
 
-KEEP but lower (score 1):
-- Reactions to other AI news where the agent is implicated.
-- Hiring / company-culture posts that signal investment.
-- Memes or jokes about the product (low score; keep for community color).
-- Tweets with media (images / videos) but minimal text - if the media context likely shows the product, keep at 1.
-
-DROP (score 0, keep=false):
-- Pure off-topic content (sports, politics, food, personal life with no AI angle).
-- Generic greetings, "thanks", "great work" without product content.
-- Promotional spam not directly product-related.
-- Random user replies that don't move the product story.
+Judge significance, not enthusiasm: a calm "X now works on Windows" can outrank a hype-filled minor tweak. Reserve 9-10 for genuinely rare, industry-level events.
 
 Return ONLY a JSON array (no prose). Schema:
-[{"id": "...", "keep": true, "score": 2, "kind": "release", "reason": "..."}]`;
+[{"id": "...", "keep": true, "score": 6, "kind": "release", "reason": "..."}]`;
 
 async function scoreBatch(
   tweets: XTweet[],
