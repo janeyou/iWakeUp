@@ -3,13 +3,18 @@
  * significance scale, so today's view is accurate immediately (new ingests
  * carry the scale forward on their own).
  *
- * Mirrors app/page.tsx's pool selection exactly: recent-24h if it has >= 20
- * rows, otherwise latest-20. Only X rows carry an LLM score, so non-X rows
- * are left untouched. Rows the rescorer now judges as noise (score 0 /
- * keep=false, including duplicates) are deleted, matching refilter-x-quality.
+ * Default: mirrors app/page.tsx's pool selection exactly (recent-24h if it
+ * has >= 20 rows, otherwise latest-20). Pass --hours=N to instead target a
+ * fixed ingested-at window, e.g. --hours=168 matches the weekly digest's
+ * getRecentEntries(24*7) so the coming digest reads a consistent scale.
+ *
+ * Only X rows carry an LLM score, so non-X rows are left untouched. Rows the
+ * rescorer now judges as noise (score 0 / keep=false, including duplicates)
+ * are deleted, matching refilter-x-quality.
  *
  * Usage:
- *   npx tsx --env-file=.env.local scripts/rescore-current.ts            # dry run
+ *   npx tsx --env-file=.env.local scripts/rescore-current.ts            # dry run, homepage pool
+ *   npx tsx --env-file=.env.local scripts/rescore-current.ts --hours=168 # dry run, 7-day digest window
  *   npx tsx --env-file=.env.local scripts/rescore-current.ts --apply    # mutate
  */
 import { sql } from "@vercel/postgres";
@@ -19,6 +24,16 @@ import { filterTweetsForQuality } from "../lib/xQuality";
 import type { XTweet } from "../lib/x";
 
 const APPLY = process.argv.includes("--apply");
+const HOURS_ARG = process.argv.find((a) => a.startsWith("--hours="));
+const HOURS = HOURS_ARG ? Number(HOURS_ARG.split("=")[1]) : null;
+
+// When provided, delete ONLY these ids; every other row is updated to its new
+// score (even ones the rescorer would otherwise drop), so a curated cleanup
+// doesn't silently lose rows. Without it, falls back to auto-delete on noise.
+const DELETE_IDS_ARG = process.argv.find((a) => a.startsWith("--delete-ids="));
+const DELETE_ALLOWLIST = DELETE_IDS_ARG
+  ? new Set(DELETE_IDS_ARG.split("=")[1].split(",").map((s) => Number(s.trim())))
+  : null;
 
 function handleFromUrl(url: string): string {
   const m = url.match(/x\.com\/([^/?#]+)/i);
@@ -28,12 +43,21 @@ function handleFromUrl(url: string): string {
 async function main() {
   console.log(APPLY ? "🟢 APPLY mode: will mutate the DB.\n" : "🔵 DRY RUN: no DB changes. Pass --apply to commit.\n");
 
-  // Same pool the homepage builds (see app/page.tsx).
-  const r24 = await getRecentEntries(24);
-  const pool = r24.length >= 20 ? r24 : await getLatestEntries(20);
+  let pool: EntryRow[];
+  let poolDesc: string;
+  if (HOURS != null) {
+    // Match the weekly digest's window: getRecentEntries(24*7).
+    pool = await getRecentEntries(HOURS);
+    poolDesc = `last ${HOURS}h by ingested_at`;
+  } else {
+    // Same pool the homepage builds (see app/page.tsx).
+    const r24 = await getRecentEntries(24);
+    pool = r24.length >= 20 ? r24 : await getLatestEntries(20);
+    poolDesc = r24.length >= 20 ? "recent-24h" : "latest-20";
+  }
   const xRows = pool.filter((e) => e.source_type === "x" && e.tweet_id);
 
-  console.log(`Homepage pool: ${pool.length} rows (${r24.length >= 20 ? "recent-24h" : "latest-20"}), ${xRows.length} are X tweets.\n`);
+  console.log(`Pool: ${pool.length} rows (${poolDesc}), ${xRows.length} are X tweets.\n`);
   if (xRows.length === 0) {
     console.log("No X rows in the current pool. Nothing to re-score.");
     return;
@@ -85,16 +109,25 @@ async function main() {
       const head = `id=${r.id} ${r.quality_score ?? "null"}→${q.score} kind=${r.entry_type}→${q.kind}`;
       const snip = r.title.slice(0, 60);
 
-      if (!q.keep || q.score === 0) {
+      // With an allowlist, delete only listed ids and update everything else.
+      // Without one, fall back to auto-deleting noise (score 0 / keep=false).
+      const shouldDelete = DELETE_ALLOWLIST
+        ? DELETE_ALLOWLIST.has(r.id)
+        : !q.keep || q.score === 0;
+
+      if (shouldDelete) {
         console.log(`  DROP ${head}  ${snip}\n       reason: ${q.reason}`);
         if (APPLY) await sql`DELETE FROM entries WHERE id = ${r.id}`;
         dropped++;
       } else {
+        // Floor kept rows at 1 so a force-kept low-signal row isn't written as
+        // 0 (which reads as noise) when we deliberately chose to keep it.
+        const score = Math.max(q.score, 1);
         console.log(`  KEEP ${head}  ${snip}`);
         if (APPLY) {
           await sql`
             UPDATE entries
-            SET quality_score = ${q.score}, quality_reason = ${q.reason}, entry_type = ${q.kind}
+            SET quality_score = ${score}, quality_reason = ${q.reason}, entry_type = ${q.kind}
             WHERE id = ${r.id}
           `;
         }
