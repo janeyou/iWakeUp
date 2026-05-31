@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import { NextResponse } from "next/server";
-import WeeklyDigest from "@/emails/WeeklyDigest";
+import WeeklyDigest, { DARK_BODY_CSS } from "@/emails/WeeklyDigest";
 import { getDigestIssue } from "@/lib/db";
 import { getIssueNumbers } from "@/lib/issue";
 
@@ -32,7 +32,9 @@ export async function GET(
     }),
   );
 
-  // Inject Open Graph + canonical tags into the rendered <head>.
+  // Inject Open Graph + canonical tags into the rendered <head>. Also inject the
+  // dark-mode CSS unconditionally: web visitors get dark by default (matches the
+  // rest of airadarapp.com), regardless of their OS color-scheme preference.
   const ogTags = [
     `<meta property="og:title" content="AI Radar · ${formatted}">`,
     `<meta property="og:description" content="${escapeHtml(row.content.deck)}">`,
@@ -40,6 +42,7 @@ export async function GET(
     `<meta name="description" content="${escapeHtml(row.content.deck)}">`,
     `<title>AI Radar · ${formatted} · ${row.content.weekRangeLabel}</title>`,
     `<link rel="canonical" href="https://airadarapp.com/issues/${weekKey}">`,
+    `<style>${DARK_BODY_CSS}</style>`,
   ].join("");
 
   const withOg = body.replace(/<head>/i, `<head>${ogTags}`);
@@ -74,18 +77,21 @@ function escapeHtml(s: string): string {
 }
 
 function subscribeFooterHtml(weekKey: string): string {
-  return `<section style="background:#f7f7f6;color:#1a1a1a;padding:28px 24px;font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;border-top:1px solid #e7e5e1;">
+  // Dark-native colors so the section doesn't collide with the auto dark overrides
+  // applied to the email content above it. Hex values here are deliberately not
+  // members of the override map: #f0f0f0, #14171f, #1a1f2a, #2a3140, etc.
+  return `<section style="background-color:#14171f;color:#f0f0f0;padding:28px 24px;font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;border-top:1px solid #2a3140;">
   <div style="max-width:540px;margin:0 auto;text-align:center;">
-    <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6b6b6b;margin-bottom:8px;">Made it to the end?</div>
-    <div style="font-size:16px;font-weight:400;margin-bottom:14px;letter-spacing:-0.01em;">Get next Sunday's issue in your inbox.</div>
+    <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6f7686;margin-bottom:8px;">Made it to the end?</div>
+    <div style="font-size:16px;font-weight:400;margin-bottom:14px;letter-spacing:-0.01em;color:#f0f0f0;">Get next Sunday's issue in your inbox.</div>
     <form id="ai-radar-subscribe-footer" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
       <input type="text" name="hp" tabindex="-1" autocomplete="off" style="display:none;">
-      <input type="email" name="email" placeholder="you@example.com" required style="padding:8px 12px;border:1px solid #d0cdc6;border-radius:6px;font-size:13px;min-width:220px;font-family:inherit;color:#1a1a1a;background:#fff;">
-      <button type="submit" style="background:#1a1a1a;color:#fff;border:0;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Subscribe</button>
+      <input type="email" name="email" placeholder="you@example.com" required style="padding:8px 12px;border:1px solid #2a3140;border-radius:6px;font-size:13px;min-width:220px;font-family:inherit;color:#f0f0f0;background-color:#1a1f2a;">
+      <button type="submit" style="background-color:#7c5fb8;color:#ffffff;border:0;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Subscribe</button>
     </form>
-    <div id="ai-radar-subscribe-footer-msg" style="font-size:12px;margin-top:10px;min-height:16px;color:#6b6b6b;"></div>
+    <div id="ai-radar-subscribe-footer-msg" style="font-size:12px;margin-top:10px;min-height:16px;color:#9aa3b2;"></div>
     <div style="margin-top:14px;font-family:'Geist Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;">
-      <a href="https://www.airadarapp.com/issues" style="color:#6b6b6b;text-decoration:none;">All issues &rarr;</a>
+      <a href="https://www.airadarapp.com/issues" style="color:#9aa3b2;text-decoration:none;">All issues &rarr;</a>
     </div>
   </div>
 </section>

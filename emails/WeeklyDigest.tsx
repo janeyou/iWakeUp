@@ -42,6 +42,49 @@ const FONT_SANS = "'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif";
 const FONT_MONO =
   "'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace";
 
+/**
+ * Dark-mode overrides. Targets the specific hex literals React Email emits in the
+ * inline `style="..."` attributes (verified: no spaces around colons). Used two ways:
+ *
+ *   1. Inside the email's <Head> wrapped in @media (prefers-color-scheme: dark),
+ *      so Apple Mail (and any other client that honors that media query) shows a
+ *      dark email when the user's OS is dark. Gmail's own auto-dark continues to
+ *      do its thing for users who don't trigger this query.
+ *   2. Inside the /issues/[weekKey] route handler, applied UNCONDITIONALLY so the
+ *      public web page is dark by default (matches the rest of airadarapp.com).
+ */
+export const DARK_BODY_CSS = `
+body[style*="background-color:#fbfbfb"] {
+  background-color: #0e1014 !important;
+  color: #f0f0f0 !important;
+}
+.aw-issue-content,
+.aw-issue-content [style*="background-color:#ffffff"] {
+  background-color: #14171f !important;
+}
+.aw-issue-content [style*="background-color:#f7f7f6"] {
+  background-color: #1a1f2a !important;
+}
+.aw-issue-content [style*="#e7e5e1"] {
+  border-color: #2a3140 !important;
+}
+.aw-issue-content [style*="color:#d0cdc6"] {
+  color: #3c4456 !important;
+}
+.aw-issue-content [style*="color:#1a1a1a"] {
+  color: #f0f0f0 !important;
+}
+.aw-issue-content [style*="color:#6b6b6b"] {
+  color: #9aa3b2 !important;
+}
+.aw-issue-content [style*="color:#9a9a98"] {
+  color: #6f7686 !important;
+}
+.aw-issue-content [style*="color:#e5e7eb"] {
+  color: #f0f0f0 !important;
+}
+`;
+
 // Stacks side-by-side <td> cells, shrinks headline + body type, tightens container
 // padding when the client viewport falls below 600px. Apple Mail / Gmail iOS / Gmail
 // web all honor these queries.
@@ -90,11 +133,11 @@ export default function WeeklyDigest({
   return (
     <Html>
       <Head>
-        <style>{MOBILE_CSS}</style>
+        <style>{`${MOBILE_CSS}\n@media (prefers-color-scheme: dark) {\n${DARK_BODY_CSS}\n}`}</style>
       </Head>
       <Preview>{`AI Radar · Vol ${vol} Issue ${issueNum} · ${issue.weekRangeLabel}`}</Preview>
       <Body style={body}>
-        <Container style={container} className="m-container">
+        <Container style={container} className="m-container aw-issue-content">
           {approveUrl && (
             <Section style={approveBanner}>
               <Text style={approveNote}>
