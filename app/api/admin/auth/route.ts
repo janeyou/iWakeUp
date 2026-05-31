@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const body = await request.formData();
   const token = body.get("token")?.toString() ?? "";
-  const expected = process.env.CRON_SECRET;
+  const expected = process.env.ADMIN_PASSWORD;
 
   if (!expected || token !== expected) {
     const url = new URL(request.url);

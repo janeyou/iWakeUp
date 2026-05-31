@@ -7,6 +7,19 @@ export type ChangelogEntry = {
 /** What shipped, newest first. User-facing only; internals live in notes. */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: "2026-05-31",
+    title: "v0.11, weekly editorial digest + public issue archive",
+    bullets: [
+      "Issue 003 is out: 'i wake up, there is another milestone week of AI updates.' Covers Opus 4.8 and Anthropic's $65B Series H, across 5 themes.",
+      "Past issues are now public at airadarapp.com/issues. Each one is a shareable permalink like /issues/2026-05-31.",
+      "Weekly digest redesigned around an editorial layout: hub-and-spokes hub card, themed sections, CEO-scan headlines that name names when one story dominates the week.",
+      "Drafts auto-generated each Saturday by Claude Opus 4.7. Sunday 6am PT, the digest goes out to subscribers.",
+      "Theme count is now flexible (3 to 6 per week) instead of forced six, so quiet weeks earn fewer themes and loud weeks earn more.",
+      "Continuous Issue + yearly Volume numbering. Issue 001 was May 17.",
+      "New 'Issues' link in the top nav.",
+    ],
+  },
+  {
     date: "2026-05-04",
     title: "v0.7, public beta",
     bullets: [
