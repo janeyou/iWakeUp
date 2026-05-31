@@ -1,7 +1,7 @@
 import { render } from "@react-email/components";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import WeeklyDigest, { DARK_BODY_CSS, MOBILE_CSS } from "@/emails/WeeklyDigest";
+import WeeklyDigest, { MOBILE_CSS } from "@/emails/WeeklyDigest";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SubscribeForm } from "@/components/SubscribeForm";
 import { getDigestIssue } from "@/lib/db";
@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 
 const WEEK_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-// Overrides applied AFTER DARK_BODY_CSS so the email content blends with the
-// rest of airadarapp.com instead of looking like an embedded card. Replaces
-// the email's hardcoded dark hex surfaces with the site's CSS variables.
-const WEB_BLEND_CSS = `
+// Web-only theme bridge: maps the email's hardcoded hex values onto the site's
+// CSS variables so the email content renders correctly in EITHER the site's
+// light OR dark theme. Replaces DARK_BODY_CSS on web (DARK_BODY_CSS forces
+// dark colors and breaks in light mode).
+const WEB_THEME_CSS = `
 .aw-issue-content {
   background-color: transparent !important;
 }
@@ -25,6 +26,24 @@ const WEB_BLEND_CSS = `
 }
 .aw-issue-content [style*="background-color:#f7f7f6"] {
   background-color: var(--color-surface-2) !important;
+}
+.aw-issue-content [style*="#e7e5e1"] {
+  border-color: var(--color-border) !important;
+}
+.aw-issue-content [style*="color:#d0cdc6"] {
+  color: var(--color-border-strong) !important;
+}
+.aw-issue-content [style*="color:#1a1a1a"] {
+  color: var(--color-text) !important;
+}
+.aw-issue-content [style*="color:#6b6b6b"] {
+  color: var(--color-text-muted) !important;
+}
+.aw-issue-content [style*="color:#9a9a98"] {
+  color: var(--color-text-faint) !important;
+}
+.aw-issue-content [style*="color:#e5e7eb"] {
+  color: var(--color-text) !important;
 }
 `;
 
@@ -81,7 +100,7 @@ export default async function IssuePage({
     <>
       <style
         dangerouslySetInnerHTML={{
-          __html: `${MOBILE_CSS}\n${DARK_BODY_CSS}\n${WEB_BLEND_CSS}`,
+          __html: `${MOBILE_CSS}\n${WEB_THEME_CSS}`,
         }}
       />
 
