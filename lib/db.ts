@@ -575,3 +575,16 @@ export async function listDigestIssueKeys(limit = 50): Promise<string[]> {
   `;
   return rows.map((r) => r.week_key);
 }
+
+/** Only issues that have actually been sent to subscribers; safe for the public archive. */
+export async function listSentDigestIssueKeys(limit = 50): Promise<string[]> {
+  const { rows } = await sql<{ week_key: string }>`
+    SELECT di.week_key
+    FROM digest_issues di
+    INNER JOIN digest_approvals da ON di.week_key = da.week_key
+    WHERE da.sent_at IS NOT NULL
+    ORDER BY di.week_key DESC
+    LIMIT ${limit}
+  `;
+  return rows.map((r) => r.week_key);
+}

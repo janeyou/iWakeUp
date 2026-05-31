@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getDigestIssue, listDigestIssueKeys } from "@/lib/db";
+import { getDigestIssue, listSentDigestIssueKeys } from "@/lib/db";
 import { getIssueNumbers } from "@/lib/issue";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ type IssueRow = {
 };
 
 async function loadIssues(): Promise<IssueRow[]> {
-  const keys = await listDigestIssueKeys(100);
+  const keys = await listSentDigestIssueKeys(100);
   const rows = await Promise.all(
     keys.map(async (k) => {
       const row = await getDigestIssue(k);
