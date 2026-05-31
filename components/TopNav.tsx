@@ -24,6 +24,9 @@ export function TopNav() {
           <Link href="/drops" className="hover:text-[var(--color-text)]">
             Drops
           </Link>
+          <Link href="/issues" className="hover:text-[var(--color-text)]">
+            Issues
+          </Link>
           <Link href="/agents" className="hover:text-[var(--color-text)]">
             Tools
           </Link>

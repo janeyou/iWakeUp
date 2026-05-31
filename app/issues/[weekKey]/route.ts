@@ -48,10 +48,13 @@ export async function GET(
   // arriving from a shared link have a clear next step.
   const archiveBar = archiveBarHtml();
   const subscribeBanner = subscribeBannerHtml(weekKey);
-  const html = withOg.replace(
+  const subscribeFooter = subscribeFooterHtml(weekKey);
+  const withTopChrome = withOg.replace(
     /(<body[^>]*>)/i,
     `$1${archiveBar}${subscribeBanner}`,
   );
+  // Append a quieter secondary CTA just before </body> for readers who scroll all the way.
+  const html = withTopChrome.replace(/<\/body>/i, `${subscribeFooter}</body>`);
 
   return new Response(html, {
     headers: {
@@ -68,6 +71,53 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function subscribeFooterHtml(weekKey: string): string {
+  return `<section style="background:#f7f7f6;color:#1a1a1a;padding:28px 24px;font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;border-top:1px solid #e7e5e1;">
+  <div style="max-width:540px;margin:0 auto;text-align:center;">
+    <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6b6b6b;margin-bottom:8px;">Made it to the end?</div>
+    <div style="font-size:16px;font-weight:400;margin-bottom:14px;letter-spacing:-0.01em;">Get next Sunday's issue in your inbox.</div>
+    <form id="ai-radar-subscribe-footer" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+      <input type="text" name="hp" tabindex="-1" autocomplete="off" style="display:none;">
+      <input type="email" name="email" placeholder="you@example.com" required style="padding:8px 12px;border:1px solid #d0cdc6;border-radius:6px;font-size:13px;min-width:220px;font-family:inherit;color:#1a1a1a;background:#fff;">
+      <button type="submit" style="background:#1a1a1a;color:#fff;border:0;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Subscribe</button>
+    </form>
+    <div id="ai-radar-subscribe-footer-msg" style="font-size:12px;margin-top:10px;min-height:16px;color:#6b6b6b;"></div>
+    <div style="margin-top:14px;font-family:'Geist Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;">
+      <a href="https://www.airadarapp.com/issues" style="color:#6b6b6b;text-decoration:none;">All issues &rarr;</a>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var f = document.getElementById('ai-radar-subscribe-footer');
+  var m = document.getElementById('ai-radar-subscribe-footer-msg');
+  if (!f) return;
+  f.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = f.email.value;
+    var hp = f.hp.value;
+    m.textContent = 'Sending...';
+    try {
+      var res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email: email, honeypot: hp, source: 'issue-footer:${weekKey}'})
+      });
+      var data = await res.json();
+      if (res.ok) {
+        m.textContent = data.message || 'Check your inbox to confirm.';
+        f.style.display = 'none';
+      } else {
+        m.textContent = data.error || 'Something went wrong, try again.';
+      }
+    } catch(err) {
+      m.textContent = 'Network error. Try again.';
+    }
+  });
+})();
+</script>`;
 }
 
 function archiveBarHtml(): string {

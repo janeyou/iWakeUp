@@ -74,6 +74,16 @@ export default async function HomePage() {
           <div className="mt-5 flex justify-center">
             <SubscribeForm source="home" />
           </div>
+          <p className="mt-4 text-xs text-[var(--color-text-muted)]">
+            Curious first?{" "}
+            <Link
+              href="/issues"
+              className="underline decoration-[var(--color-border-strong)] underline-offset-4 hover:text-[var(--color-text)] hover:decoration-[var(--color-text)]"
+            >
+              Read past issues
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
