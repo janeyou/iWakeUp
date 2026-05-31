@@ -38,6 +38,14 @@ const WEB_THEME_CSS = `
   border: 0 !important;
   border-radius: 0 !important;
 }
+/* On mobile, the article wrapper (px-4) owns the outer horizontal spacing;
+   zero out the Container's own padding so we don't double up. */
+@media (max-width: 600px) {
+  .aw-issue-content.m-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
 .aw-issue-content [style*="color:#d0cdc6"] {
   color: var(--color-border-strong) !important;
 }
@@ -89,8 +97,6 @@ export default async function IssuePage({
   const row = await getDigestIssue(weekKey);
   if (!row) notFound();
 
-  const { vol, issue: issueNum } = getIssueNumbers(row.content.weekKey);
-
   const fullEmailHtml = await render(
     WeeklyDigest({
       issue: row.content,
@@ -113,22 +119,8 @@ export default async function IssuePage({
       />
 
       <main className="bg-[var(--color-bg)]">
-        <section className="border-b border-[var(--color-border)]">
-          <div className="mx-auto flex w-full max-w-[680px] flex-wrap items-center justify-between gap-3 px-6 py-3 text-xs font-mono uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-            <span>
-              Vol {vol} · Issue {issueNum} · {row.content.weekRangeLabel}
-            </span>
-            <a
-              href="/issues"
-              className="hover:text-[var(--color-text)]"
-            >
-              All past issues →
-            </a>
-          </div>
-        </section>
-
         <section className="bg-[color-mix(in_oklch,_var(--color-accent)_70%,_var(--color-bg))]">
-          <div className="mx-auto w-full max-w-[680px] px-6 py-8 text-center">
+          <div className="mx-auto w-full max-w-[680px] px-4 py-8 text-center sm:px-6">
             <p className="text-base font-medium tracking-[-0.01em] text-white sm:text-lg">
               Like this? Get next Sunday&apos;s issue.
             </p>
@@ -142,12 +134,12 @@ export default async function IssuePage({
         </section>
 
         <article
-          className="aw-issue-content"
+          className="aw-issue-content px-4 sm:px-0"
           dangerouslySetInnerHTML={{ __html: innerEmailContent }}
         />
 
         <section className="border-t border-[var(--color-border)]">
-          <div className="mx-auto w-full max-w-[680px] px-6 py-10 text-center">
+          <div className="mx-auto w-full max-w-[680px] px-4 py-10 text-center sm:px-6">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
               Made it to the end?
             </p>
