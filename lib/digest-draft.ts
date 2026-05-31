@@ -73,11 +73,13 @@ const EditorialDraftSchema = z.object({
   hubH2: z
     .string()
     .describe(
-      "Title of the center mindmap hub. Short, evocative. Example: 'The week, in six currents.'",
+      "Title of the center mindmap hub. Short, evocative, count-independent. " +
+        "Examples: 'What this week meant.', 'The week in themes.', 'The signals that mattered.'",
     ),
-  themes: z.array(ThemeSchema).length(6).describe(
-    "Exactly 6 themes that cluster the week's entries by what the news *meant*, " +
-      "not by which vendor shipped it. Order from highest to lowest editorial weight.",
+  themes: z.array(ThemeSchema).min(3).max(6).describe(
+    "3 to 6 themes that cluster the week's entries by what the news *meant*, " +
+      "not by which vendor shipped it. Order from highest to lowest editorial weight. " +
+      "Pick fewer themes when the week has few strong clusters; never pad.",
   ),
   fullDigestRight: z
     .array(z.string())
@@ -116,12 +118,13 @@ EDITORIAL VOICE
 - Footer punchline echoes the masthead: "i wake up, there is another one." is the default; vary if the week's mood justifies.
 
 THEMING
-- You produce EXACTLY 6 themes per issue. No more, no less.
+- Pick 3 to 6 themes for the issue, depending on what the week earned. Quiet weeks merit fewer themes; loud weeks merit more.
 - Themes cluster entries by what the news *meant*, not who shipped it. Cross-vendor groupings are the goal.
-- Sample theme labels we have used: Distribution (agents leaving the IDE), Autonomy (parallel agents), Go to market (enterprise pitch), Trust and safety (security, supply chain), Stance (papers, partnerships, philosophy), Surfaces (consumer, voice, non-IDE).
-- Pick the 6 most editorially interesting clusters for THIS week. Reuse labels when fitting; invent new ones when the week warrants.
-- Each theme MUST have at least one entry. If you don't see 6 strong clusters, merge weaker ones rather than padding.
-- Every entry given to you must appear in exactly one theme. Do not invent entries that weren't in the input.
+- Sample theme labels we have used: Distribution (agents leaving the IDE), Autonomy (parallel agents), Go to market (enterprise pitch), Trust and safety (security, supply chain), Stance (papers, partnerships, philosophy), Surfaces (consumer, voice, non-IDE). Reuse labels when fitting; invent new ones when the week warrants.
+- Each theme MUST have at least 3 entries with strong editorial fit. Do NOT pad weak clusters to hit a count. Merge or drop instead.
+- Consolidate near-duplicates (e.g. the same launch reported via blog + tweet + changelog) into a single canonical entry per theme.
+- Every entry given to you should appear in at most one theme. Skip entries that don't fit anywhere strong rather than forcing them in. Do not invent entries that weren't in the input.
+- Hub H2 must NOT reference a theme count (no 'six currents'); pick a phrase that works for any count.
 
 ENTRY TITLES
 - Rewrite the raw entry title into a single declarative sentence ending with a period.
