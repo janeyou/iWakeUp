@@ -88,7 +88,7 @@ body[style*="background-color:#fbfbfb"] {
 // Stacks side-by-side <td> cells, shrinks headline + body type, tightens container
 // padding when the client viewport falls below 600px. Apple Mail / Gmail iOS / Gmail
 // web all honor these queries.
-const MOBILE_CSS = `
+export const MOBILE_CSS = `
 @media only screen and (max-width: 600px) {
   .m-container { padding: 24px 16px !important; }
   .m-stack > tbody > tr > td,
