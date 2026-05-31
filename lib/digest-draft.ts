@@ -125,6 +125,13 @@ THEMING
 - Consolidate near-duplicates (e.g. the same launch reported via blog + tweet + changelog) into a single canonical entry per theme.
 - Every entry given to you should appear in at most one theme. Skip entries that don't fit anywhere strong rather than forcing them in. Do not invent entries that weren't in the input.
 - Hub H2 must NOT reference a theme count (no 'six currents'); pick a phrase that works for any count.
+- Deck (subtitle) must NOT reference a theme count either. Good: "One issue, every drop linked." Bad: "One issue, six themes, every drop linked."
+
+THEME HEADLINES
+- Each theme's headline is the CEO-scan line: assume a busy reader spends 1 second per card.
+- When ONE specific story dominates a theme, name it with proper nouns and numbers. Good: "Anthropic at $965 billion." Bad: "The business of AI gets louder."
+- When 3+ items of comparable weight cluster, list the specific shipped pieces. Good: "Admin API, WIF, private MCP servers." Bad: "Enterprise plumbing fills in."
+- Reserve editorial verb-headlines ("X hardens", "Y fills in", "Z gets louder") only when the entries are genuinely a vibe shift with no single anchor.
 
 ENTRY TITLES
 - Rewrite the raw entry title into a single declarative sentence ending with a period.
