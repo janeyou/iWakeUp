@@ -67,7 +67,7 @@ export const CHANGELOG: ChangelogEntry[] = [
 /** What's next. Direction, not deadline; dates may shift. */
 export const UPCOMING: ChangelogEntry[] = [
   {
-    date: "2026-05-15",
+    date: "2026-06-30",
     title: "Per-entry actions",
     bullets: [
       "Mark items seen, save them for later, or react with a quick note.",
@@ -75,10 +75,17 @@ export const UPCOMING: ChangelogEntry[] = [
     ],
   },
   {
-    date: "2026-05-30",
+    date: "2026-07-15",
     title: "More agents",
     bullets: [
       "Wiring in the next batch of tools. Have a suggestion? Send it from the footer.",
+    ],
+  },
+  {
+    date: "2026-07-30",
+    title: "Pick your themes",
+    bullets: [
+      "Subscribe to the themes you care about, model launches, security, enterprise plumbing, builder profiles, and have the Sunday digest filter to those.",
     ],
   },
 ];
