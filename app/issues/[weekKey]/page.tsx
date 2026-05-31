@@ -23,13 +23,17 @@ const WEB_THEME_CSS = `
   background-color: transparent !important;
 }
 .aw-issue-content [style*="background-color:#ffffff"] {
-  border-color: var(--color-border) !important;
+  border-color: transparent !important;
 }
 .aw-issue-content [style*="background-color:#f7f7f6"] {
   background-color: var(--color-surface-2) !important;
 }
+/* All hex #e7e5e1 borders (theme card frames, hub frame, section dividers,
+   entry row outlines) become invisible on web. Spacing carries the structure
+   instead. The 3px agent-colored left border on entry rows uses a different
+   hex (codex/claude/cursor color) so it's untouched and stays as a signal. */
 .aw-issue-content [style*="#e7e5e1"] {
-  border-color: var(--color-border) !important;
+  border-color: transparent !important;
 }
 /* The OUTER container is the email's card frame — remove it on web so the
    content flows seamlessly into the page. Inner theme cards + entry rows
