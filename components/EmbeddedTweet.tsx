@@ -1,10 +1,10 @@
 "use client";
 
 import { Tweet } from "react-tweet";
+import { TweetErrorBoundary } from "@/components/TweetErrorBoundary";
 
 type Props = {
   id: string;
-  size?: "xs" | "sm" | "md";
   /**
    * Compact mode for the lead drop. Caps width at 420px and tightens
    * react-tweet's internal spacing via CSS overrides defined in globals.css.
@@ -33,7 +33,15 @@ export function EmbeddedTweet({ id, compact = false, card = false }: Props) {
       className={variant}
       style={compact ? { maxWidth: 420, width: "100%" } : undefined}
     >
-      <Tweet id={id} />
+      <TweetErrorBoundary
+        fallback={
+          <p className="font-mono text-[11px] uppercase tracking-wide text-[var(--color-text-faint)]">
+            Post unavailable
+          </p>
+        }
+      >
+        <Tweet id={id} />
+      </TweetErrorBoundary>
     </div>
   );
 }
