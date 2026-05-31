@@ -17,11 +17,12 @@ const WEEK_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 // light OR dark theme. Replaces DARK_BODY_CSS on web (DARK_BODY_CSS forces
 // dark colors and breaks in light mode).
 const WEB_THEME_CSS = `
-.aw-issue-content {
+.aw-issue-content,
+.aw-issue-content [style*="background-color:#fbfbfb"],
+.aw-issue-content [style*="background-color:#ffffff"] {
   background-color: transparent !important;
 }
 .aw-issue-content [style*="background-color:#ffffff"] {
-  background-color: transparent !important;
   border-color: var(--color-border) !important;
 }
 .aw-issue-content [style*="background-color:#f7f7f6"] {
