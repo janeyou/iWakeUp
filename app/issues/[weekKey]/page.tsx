@@ -12,6 +12,22 @@ export const dynamic = "force-dynamic";
 
 const WEEK_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Overrides applied AFTER DARK_BODY_CSS so the email content blends with the
+// rest of airadarapp.com instead of looking like an embedded card. Replaces
+// the email's hardcoded dark hex surfaces with the site's CSS variables.
+const WEB_BLEND_CSS = `
+.aw-issue-content {
+  background-color: transparent !important;
+}
+.aw-issue-content [style*="background-color:#ffffff"] {
+  background-color: transparent !important;
+  border-color: var(--color-border) !important;
+}
+.aw-issue-content [style*="background-color:#f7f7f6"] {
+  background-color: var(--color-surface-2) !important;
+}
+`;
+
 export async function generateMetadata({
   params,
 }: {
@@ -65,13 +81,13 @@ export default async function IssuePage({
     <>
       <style
         dangerouslySetInnerHTML={{
-          __html: `${MOBILE_CSS}\n${DARK_BODY_CSS}`,
+          __html: `${MOBILE_CSS}\n${DARK_BODY_CSS}\n${WEB_BLEND_CSS}`,
         }}
       />
 
       <main className="bg-[var(--color-bg)]">
-        <section className="border-b border-[var(--color-border)] bg-[var(--color-surface-2)]">
-          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-6 py-3 text-xs font-mono uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+        <section className="border-b border-[var(--color-border)]">
+          <div className="mx-auto flex w-full max-w-[680px] flex-wrap items-center justify-between gap-3 px-6 py-3 text-xs font-mono uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             <span>
               Vol {vol} · Issue {issueNum} · {row.content.weekRangeLabel}
             </span>
@@ -85,7 +101,7 @@ export default async function IssuePage({
         </section>
 
         <section className="bg-[color-mix(in_oklch,_var(--color-accent)_70%,_var(--color-bg))]">
-          <div className="mx-auto max-w-2xl px-6 py-8 text-center">
+          <div className="mx-auto w-full max-w-[680px] px-6 py-8 text-center">
             <p className="text-base font-medium tracking-[-0.01em] text-white sm:text-lg">
               Like this? Get next Sunday&apos;s issue.
             </p>
@@ -99,12 +115,12 @@ export default async function IssuePage({
         </section>
 
         <article
-          className="aw-issue-content mx-auto max-w-[680px]"
+          className="aw-issue-content"
           dangerouslySetInnerHTML={{ __html: innerEmailContent }}
         />
 
-        <section className="border-t border-[var(--color-border)] bg-[var(--color-surface-2)]">
-          <div className="mx-auto max-w-2xl px-6 py-10 text-center">
+        <section className="border-t border-[var(--color-border)]">
+          <div className="mx-auto w-full max-w-[680px] px-6 py-10 text-center">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
               Made it to the end?
             </p>
